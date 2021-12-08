@@ -11,7 +11,9 @@ require (
 )
 
 require (
+	github.com/GeertJohan/go.rice v1.0.2 // indirect
 	github.com/codegangsta/negroni v1.0.0 // indirect
+	github.com/daaku/go.zipexe v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7 // indirect
 	github.com/gin-gonic/gin v1.1.5-0.20170702092826-d459835d2b07 // indirect
 	github.com/golang/protobuf v0.0.0-20171021043952-1643683e1b54 // indirect

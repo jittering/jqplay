@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/owenthereal/jqplay/config"
 	"github.com/owenthereal/jqplay/server/middleware"
 	log "github.com/sirupsen/logrus"
@@ -30,9 +31,15 @@ func (s *Server) Start() error {
 
 	var err error
 
+	conf := rice.Config{
+		LocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS, rice.LocateWorkingDirectory},
+	}
+
+	publicBox := conf.MustFindBox("public")
+
 	tmpl := template.New("index.tmpl")
 	tmpl.Delims("#{", "}")
-	tmpl, err = tmpl.ParseFiles("public/index.tmpl")
+	tmpl, err = tmpl.Parse(publicBox.MustString("index.tmpl"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,12 +55,20 @@ func (s *Server) Start() error {
 	)
 	router.SetHTMLTemplate(tmpl)
 
-	router.Static("/js", "public/js")
-	router.Static("/css", "public/css")
-	router.Static("/images", "public/images")
-	router.Static("/fonts", "public/bower_components/bootstrap/dist/fonts")
-	router.StaticFile("/worker-xquery.js", "public/bower_components/ace-builds/src-min-noconflict/worker-xquery.js")
-	router.StaticFile("/robots.txt", "public/robots.txt")
+	router.StaticFS("/js", conf.MustFindBox("public/js").HTTPBox())
+	router.StaticFS("/css", conf.MustFindBox("public/css").HTTPBox())
+	router.StaticFS("/images", conf.MustFindBox("public/images").HTTPBox())
+	router.StaticFS("/fonts", conf.MustFindBox("public/bower_components/bootstrap/dist/fonts").HTTPBox())
+
+	workerFile := conf.MustFindBox("public/bower_components/ace-builds/src-min-noconflict").MustString("worker-xquery.js")
+	router.GET("/worker-xquery.js", func(c *gin.Context) {
+		c.String(200, workerFile)
+	})
+
+	robotsFile := publicBox.MustString("robots.txt")
+	router.GET("/robots.txt", func(c *gin.Context) {
+		c.String(200, robotsFile)
+	})
 
 	router.GET("/", h.handleIndex)
 	router.GET("/jq", h.handleJqGet)
