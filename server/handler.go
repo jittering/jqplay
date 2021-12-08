@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jingweno/jqplay/config"
-	"github.com/jingweno/jqplay/jq"
+	"github.com/owenthereal/jqplay/config"
+	"github.com/owenthereal/jqplay/jq"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/gin-gonic/gin.v1"
 )
@@ -31,7 +31,6 @@ func (c *JQHandlerContext) ShouldInitJQ() bool {
 }
 
 type JQHandler struct {
-	DB     *DB
 	Config *config.Config
 }
 
@@ -77,49 +76,14 @@ func (h *JQHandler) handleJqGet(c *gin.Context) {
 }
 
 func (h *JQHandler) handleJqSharePost(c *gin.Context) {
-	var jq *jq.JQ
-	if err := c.BindJSON(&jq); err != nil {
-		err = fmt.Errorf("error parsing JSON: %s", err)
-		h.logger(c).WithError(err).Info("error parsing JSON")
-		c.String(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-
-	if err := jq.Validate(); err != nil {
-		c.String(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-
-	id, err := h.DB.UpsertSnippet(FromJQ(jq))
-	if err != nil {
-		h.logger(c).WithError(err).Info("error upserting snippet")
-		c.String(http.StatusUnprocessableEntity, "error sharing snippet")
-		return
-	}
-
-	c.String(http.StatusCreated, id)
+	c.String(http.StatusNotImplemented, "snippets not enabled")
 }
 
 func (h *JQHandler) handleJqShareGet(c *gin.Context) {
 	id := c.Param("id")
 
-	s, err := h.DB.GetSnippet(id)
-	if err != nil {
-		h.logger(c).WithError(err).WithField("id", id).Info("error getting snippet")
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
-
-	var jqData string
-	d, err := json.Marshal(ToJQ(s))
-	if err == nil {
-		jqData = string(d)
-	}
-
-	c.HTML(200, "index.tmpl", &JQHandlerContext{
-		Config: h.Config,
-		JQ:     jqData,
-	})
+	h.logger(c).WithField("id", id).Info("snippets not enabled")
+	c.Redirect(http.StatusFound, "/")
 }
 
 func (h *JQHandler) logger(c *gin.Context) *logrus.Entry {

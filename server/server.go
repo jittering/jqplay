@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/jingweno/jqplay/config"
-	"github.com/jingweno/jqplay/server/middleware"
+	"github.com/owenthereal/jqplay/config"
+	"github.com/owenthereal/jqplay/server/middleware"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gin-gonic/gin.v1"
 )
@@ -26,12 +26,9 @@ func (s *Server) Start() error {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 
-	db, err := ConnectDB(s.Config.DatabaseURL)
-	if err != nil {
-		return err
-	}
+	h := &JQHandler{Config: s.Config}
 
-	h := &JQHandler{Config: s.Config, DB: db}
+	var err error
 
 	tmpl := template.New("index.tmpl")
 	tmpl.Delims("#{", "}")
