@@ -90,17 +90,19 @@ func (s *Server) Start(ginMode string) error {
 		}
 	}()
 
-	if !s.Config.NoOpen {
+	url := "http://"
+	if s.Config.Host == "0.0.0.0" {
+		url += "127.0.0.1"
+	} else {
+		url += s.Config.Host
+	}
+	url += ":" + s.Config.Port
+	if s.Config.NoOpen {
+		fmt.Println("> server running at", url)
+	} else {
 		go func() {
 			time.Sleep(time.Millisecond * 250)
-			url := "http://"
-			if s.Config.Host == "0.0.0.0" {
-				url += "127.0.0.1"
-			} else {
-				url += s.Config.Host
-			}
-			url += ":" + s.Config.Port
-			fmt.Println(">> opening", url, "in default browser")
+			fmt.Println("> opening", url, "in default browser")
 			browser.OpenURL(url)
 		}()
 	}
