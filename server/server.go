@@ -23,7 +23,7 @@ type Server struct {
 	Config *config.Config
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ginMode string) error {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 
@@ -44,6 +44,7 @@ func (s *Server) Start() error {
 		log.Fatal(err)
 	}
 
+	gin.SetMode(ginMode)
 	router := gin.New()
 	router.Use(
 		middleware.Timeout(25*time.Second),

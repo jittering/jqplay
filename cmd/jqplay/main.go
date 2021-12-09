@@ -7,6 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var GinMode = "debug"
+
 func main() {
 	err := jq.Init()
 	if err != nil {
@@ -28,7 +30,7 @@ func main() {
 		"port": conf.Port,
 	}).Infof("Starting server at %s:%s", conf.Host, conf.Port)
 	srv := server.New(conf)
-	err = srv.Start()
+	err = srv.Start(GinMode)
 	if err != nil {
 		log.WithError(err).Fatal("error starting sever")
 	}
