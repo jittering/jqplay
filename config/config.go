@@ -44,11 +44,13 @@ func Load() (*Config, error) {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		b, err := ioutil.ReadAll(os.Stdin)
-		if err == nil {
-			conf.JSON = string(b)
+	if os.Getenv("ELECTRON_RUN_AS_NODE") == "" {
+		stat, _ := os.Stdin.Stat()
+		if (stat.Mode() & os.ModeCharDevice) == 0 {
+			b, err := ioutil.ReadAll(os.Stdin)
+			if err == nil {
+				conf.JSON = string(b)
+			}
 		}
 	}
 
