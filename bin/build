@@ -5,5 +5,8 @@
 
 set -e
 
-go build -o ./bin/jqplay ./cmd/jqplay
 npm install
+cd server
+rice embed-go
+cd ..
+go build -ldflags="-X 'main.GinMode=release'" -o ./bin/jqplay ./cmd/jqplay
