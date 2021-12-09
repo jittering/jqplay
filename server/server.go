@@ -2,10 +2,12 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -83,13 +85,13 @@ func (s *Server) Start(ginMode string) error {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			log.WithError(err).Fatal("error starting server")
+		if err := srv.ListenAndServe(); err != nil && !strings.Contains(err.Error(), "Server closed") {
+			log.WithError(err).Fatal("error starting sever")
 		}
 	}()
 
 	<-stop
-	log.Println("\nShutting down the server...")
+	fmt.Println()
 	ctx, cancel := context.WithTimeout(context.Background(), 28*time.Second)
 	defer cancel()
 
