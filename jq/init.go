@@ -8,11 +8,21 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var Path, Version string
 
 func Init() error {
+	// first look for existing bin
+	Path = "jq"
+	err := setVersion()
+	if err == nil {
+		log.Infof("Using system jq version %s", Version)
+		return nil
+	}
+
 	pwd, err := os.Getwd()
 	if err != nil {
 		return err
