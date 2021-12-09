@@ -41,6 +41,13 @@ header a {
   color: #428bca;
 }
 
+.docs a {
+  color: #337ab7 !important;
+  text-decoration: none;
+  font-weight: bolder;
+  font-size: larger;
+}
+
 
 /* ___ Body styles ___ */
 
