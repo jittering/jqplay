@@ -12,6 +12,8 @@ import (
 var GinMode = "debug"
 
 func main() {
+	log.SetLevel(log.WarnLevel)
+
 	err := jq.Init()
 	if err != nil {
 		log.Fatal(err)

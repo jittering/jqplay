@@ -52,9 +52,6 @@ func (s *Server) Start(ginMode string) error {
 	router.Use(
 		middleware.Timeout(25*time.Second),
 		middleware.LimitContentLength(10),
-		middleware.Secure(s.Config.IsProd()),
-		middleware.RequestID(),
-		middleware.Logger(),
 		gin.Recovery(),
 	)
 	router.SetHTMLTemplate(tmpl)
@@ -82,7 +79,7 @@ func (s *Server) Start(ginMode string) error {
 	router.GET("/s/:id", h.handleJqShareGet)
 
 	srv := &http.Server{
-		Addr:    ":" + s.Config.Port,
+		Addr:    s.Config.Host + ":" + s.Config.Port,
 		Handler: router,
 	}
 
@@ -95,7 +92,13 @@ func (s *Server) Start(ginMode string) error {
 	if !s.Config.NoOpen {
 		go func() {
 			time.Sleep(time.Millisecond * 250)
-			url := "http://localhost:3000"
+			url := "http://"
+			if s.Config.Host == "0.0.0.0" {
+				url += "127.0.0.1"
+			} else {
+				url += s.Config.Host
+			}
+			url += ":" + s.Config.Port
 			fmt.Println(">> opening", url, "in default browser")
 			browser.OpenURL(url)
 		}()
