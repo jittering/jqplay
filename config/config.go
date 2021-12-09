@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -32,11 +31,12 @@ func Load() (*Config, error) {
 
 	conf.JQVer = jq.Version
 
-	b, err := ioutil.ReadAll(os.Stdin)
-	if err == nil {
-		conf.JSON = string(b)
-	} else {
-		fmt.Printf("err: %s\n", err.Error())
+	stat, _ := os.Stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		b, err := ioutil.ReadAll(os.Stdin)
+		if err == nil {
+			conf.JSON = string(b)
+		}
 	}
 
 	return conf, nil
