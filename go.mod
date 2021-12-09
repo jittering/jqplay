@@ -7,6 +7,7 @@ require (
 	github.com/joeshaw/envdecode v0.0.0-20170502020559-6326cbed175e
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
+	github.com/rakyll/statik v0.1.7
 	github.com/satori/go.uuid v1.1.0
 	github.com/sirupsen/logrus v1.0.5
 	github.com/unrolled/secure v0.0.0-20170904132641-19a872c81779

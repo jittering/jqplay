@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ex
+
+target=$1
+GOOS=$(echo $target | cut -d_ -f1) go generate -v -x ./...

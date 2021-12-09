@@ -10,3 +10,7 @@ assets/tmp
 .env
 
 /**/rice-box.go
+/**/statik/
+
+dist/
+.vscode/

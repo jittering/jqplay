@@ -14,6 +14,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/pkg/errors"
+	"github.com/rakyll/statik/fs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,10 +50,16 @@ func Init() error {
 
 // Fall back to using bundled JQ version
 func loadBundledJq() error {
-	binBox := riceConf.MustFindBox("../bin/jq")
-	bin, err := binBox.Open(osBin())
+	statikFS, err := fs.NewWithNamespace("jq")
+	if err != nil {
+		log.Fatal(err)
+	}
+	bin, err := statikFS.Open(osBin)
 	if err != nil {
 		return errors.Wrapf(err, "binary not found for %s %s", runtime.GOOS, runtime.GOARCH)
+	}
+	if err != nil {
+		return err
 	}
 	defer bin.Close()
 
@@ -61,21 +68,8 @@ func loadBundledJq() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to create temp file")
 	}
-	_, err = io.Copy(temp, bin)
-	if err != nil {
-		return errors.Wrap(err, "failed to copy bundled bin")
-	}
-	err = os.Chmod(temp.Name(), 0755)
-	if err != nil {
-		return errors.Wrap(err, "failed to to make bundled bin executable")
-	}
-	Path = temp.Name()
-	err = setVersion()
-	if err != nil {
-		return err
-	}
-	log.Infof("Using bundled jq version %s", Version)
 
+	// look for cleanup
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	go func() {
@@ -87,18 +81,28 @@ func loadBundledJq() error {
 		}
 	}()
 
+	_, err = io.Copy(temp, bin)
+	if err != nil {
+		return errors.Wrap(err, "failed to copy bundled bin")
+	}
+	temp.Close()
+
+	err = os.Chmod(temp.Name(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "failed to to make bundled bin executable")
+	}
+	Path = temp.Name()
+	err = setVersion()
+	if err != nil {
+		return err
+	}
+	log.Infof("Using bundled jq version %s", Version)
+
 	return nil
 }
 
 func osDir() string {
 	return fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-}
-
-func osBin() string {
-	if runtime.GOOS == "windows" {
-		return filepath.Join(osDir(), "jq.exe")
-	}
-	return filepath.Join(osDir(), "jq")
 }
 
 func SetPath(binDir string) error {
@@ -125,7 +129,7 @@ func setVersion() error {
 	cmd := exec.Command(Path, "--help")
 	cmd.Stdout = &b
 	cmd.Stderr = &b
-	cmd.Run()
+	err := cmd.Run()
 
 	out := bytes.TrimSpace(b.Bytes())
 	r := regexp.MustCompile(`\[version (.+)\]`)
@@ -135,6 +139,10 @@ func setVersion() error {
 
 		return nil
 	}
+
+	log.Debugf("ran command: %s\n", cmd.String())
+	log.Debugf("result: %s", err)
+	log.Debugf("output:\n%s\n", string(out))
 
 	return fmt.Errorf("can't find jq version: %s", out)
 }
