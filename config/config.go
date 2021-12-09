@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 
@@ -14,6 +15,8 @@ type Config struct {
 	GinMode   string `env:"GIN_MODE,default=debug"`
 	AssetHost string `env:"ASSET_HOST"`
 	JQVer     string
+
+	NoOpen bool
 
 	JSON string
 }
@@ -30,6 +33,9 @@ func Load() (*Config, error) {
 	}
 
 	conf.JQVer = jq.Version
+
+	flag.BoolVar(&conf.NoOpen, "no-open", false, "Do not open browser on startup")
+	flag.Parse()
 
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {

@@ -13,6 +13,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/owenthereal/jqplay/config"
 	"github.com/owenthereal/jqplay/server/middleware"
+	"github.com/pkg/browser"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gin-gonic/gin.v1"
 )
@@ -90,6 +91,15 @@ func (s *Server) Start(ginMode string) error {
 			log.WithError(err).Fatal("error starting sever")
 		}
 	}()
+
+	if !s.Config.NoOpen {
+		go func() {
+			time.Sleep(time.Millisecond * 250)
+			url := "http://localhost:3000"
+			fmt.Println(">> opening", url, "in default browser")
+			browser.OpenURL(url)
+		}()
+	}
 
 	<-stop
 	fmt.Println()
