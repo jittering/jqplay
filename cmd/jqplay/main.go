@@ -14,7 +14,12 @@ var GinMode = "debug"
 func main() {
 	log.SetLevel(log.WarnLevel)
 
-	err := jq.Init()
+	conf, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = jq.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,11 +28,6 @@ func main() {
 		"version": jq.Version,
 		"path":    jq.Path,
 	}).Info("initialized jq")
-
-	conf, err := config.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	log.WithFields(log.Fields{
 		"host": conf.Host,

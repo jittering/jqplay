@@ -7,6 +7,7 @@ import (
 
 	"github.com/joeshaw/envdecode"
 	"github.com/owenthereal/jqplay/jq"
+	log "github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -16,7 +17,8 @@ type Config struct {
 	AssetHost string `env:"ASSET_HOST"`
 	JQVer     string
 
-	NoOpen bool
+	NoOpen  bool
+	Verbose bool
 
 	JSON string
 }
@@ -34,8 +36,13 @@ func Load() (*Config, error) {
 
 	conf.JQVer = jq.Version
 
+	flag.BoolVar(&conf.Verbose, "verbose", false, "Verbose output")
 	flag.BoolVar(&conf.NoOpen, "no-open", false, "Do not open browser on startup")
 	flag.Parse()
+
+	if conf.Verbose {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
