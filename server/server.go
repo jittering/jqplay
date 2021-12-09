@@ -37,7 +37,7 @@ func (s *Server) Start(ginMode string) error {
 		LocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS, rice.LocateWorkingDirectory},
 	}
 
-	publicBox := conf.MustFindBox("public")
+	publicBox := conf.MustFindBox("public/root")
 
 	tmpl := template.New("index.tmpl")
 	tmpl.Delims("#{", "}")
@@ -58,12 +58,13 @@ func (s *Server) Start(ginMode string) error {
 	)
 	router.SetHTMLTemplate(tmpl)
 
-	router.StaticFS("/js", conf.MustFindBox("public/js").HTTPBox())
+	jsBox := conf.MustFindBox("public/js")
+	router.StaticFS("/js", jsBox.HTTPBox())
 	router.StaticFS("/css", conf.MustFindBox("public/css").HTTPBox())
 	router.StaticFS("/images", conf.MustFindBox("public/images").HTTPBox())
 	router.StaticFS("/fonts", conf.MustFindBox("public/bower_components/bootstrap/dist/fonts").HTTPBox())
 
-	workerFile := conf.MustFindBox("public/bower_components/ace-builds/src-min-noconflict").MustString("worker-xquery.js")
+	workerFile := jsBox.MustString("worker-xquery.js")
 	router.GET("/worker-xquery.js", func(c *gin.Context) {
 		c.String(200, workerFile)
 	})
