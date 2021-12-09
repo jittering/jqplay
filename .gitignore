@@ -1,10 +1,11 @@
 bin/jqplay
 gin-bin
 node_modules
+public/
 public/bower_components
 public/css
 public/js
-public/index.tmpl
+public/root/index.tmpl
 assets/tmp
 .env
 
