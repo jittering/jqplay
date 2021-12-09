@@ -3,17 +3,26 @@ package jq
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"runtime"
 
+	rice "github.com/GeertJohan/go.rice"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
 var Path, Version string
+var riceConf = rice.Config{
+	LocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS, rice.LocateWorkingDirectory},
+}
 
+// Locate jq path
 func Init() error {
 	// first look for existing bin
 	Path = "jq"
@@ -23,21 +32,77 @@ func Init() error {
 		return nil
 	}
 
+	// look for local copy
 	pwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
 	err = SetPath(pwd)
+	if err == nil {
+		log.Infof("Using pwd jq version %s", Version)
+		return nil
+	}
+
+	return loadBundledJq()
+}
+
+// Fall back to using bundled JQ version
+func loadBundledJq() error {
+	binBox := riceConf.MustFindBox("../bin/jq")
+	bin, err := binBox.Open(osBin())
+	if err != nil {
+		return errors.Wrapf(err, "binary not found for %s %s", runtime.GOOS, runtime.GOARCH)
+	}
+	defer bin.Close()
+
+	// found the proper bin, lets copy it to a temp location
+	temp, err := ioutil.TempFile("", "jq")
+	if err != nil {
+		return errors.Wrap(err, "failed to create temp file")
+	}
+	_, err = io.Copy(temp, bin)
+	if err != nil {
+		return errors.Wrap(err, "failed to copy bundled bin")
+	}
+	err = os.Chmod(temp.Name(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "failed to to make bundled bin executable")
+	}
+	Path = temp.Name()
+	err = setVersion()
 	if err != nil {
 		return err
 	}
+	log.Infof("Using bundled jq version %s", Version)
+
+	stop := make(chan os.Signal)
+	signal.Notify(stop, os.Interrupt)
+	go func() {
+		<-stop
+		log.Info("Caught stop signal; cleaning up bundled jq")
+		err = os.Remove(Path)
+		if err != nil {
+			log.Errorf("failed to remove bundled jq at %s: %s", Path, err.Error())
+		}
+	}()
 
 	return nil
 }
 
+func osDir() string {
+	return fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+}
+
+func osBin() string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(osDir(), "jq.exe")
+	}
+	return filepath.Join(osDir(), "jq")
+}
+
 func SetPath(binDir string) error {
-	jqPath := filepath.Join(binDir, "bin", fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH))
+	jqPath := filepath.Join(binDir, "bin", "jq", osDir())
 	Path = filepath.Join(jqPath, "jq")
 
 	_, err := os.Stat(Path)

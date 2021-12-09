@@ -9,4 +9,4 @@ public/root/index.tmpl
 assets/tmp
 .env
 
-server/rice-box.go
+/**/rice-box.go
