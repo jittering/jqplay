@@ -20,6 +20,8 @@ const (
 type JQHandlerContext struct {
 	*config.Config
 	JQ string
+
+	JSON string
 }
 
 func (c *JQHandlerContext) Asset(path string) string {
@@ -35,7 +37,7 @@ type JQHandler struct {
 }
 
 func (h *JQHandler) handleIndex(c *gin.Context) {
-	c.HTML(200, "index.tmpl", &JQHandlerContext{Config: h.Config})
+	c.HTML(200, "index.tmpl", &JQHandlerContext{Config: h.Config, JSON: h.Config.JSON})
 }
 
 func (h *JQHandler) handleJqPost(c *gin.Context) {

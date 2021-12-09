@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/joeshaw/envdecode"
 	"github.com/owenthereal/jqplay/jq"
 )
@@ -11,6 +15,8 @@ type Config struct {
 	GinMode   string `env:"GIN_MODE,default=debug"`
 	AssetHost string `env:"ASSET_HOST"`
 	JQVer     string
+
+	JSON string
 }
 
 func (c *Config) IsProd() bool {
@@ -25,6 +31,13 @@ func Load() (*Config, error) {
 	}
 
 	conf.JQVer = jq.Version
+
+	b, err := ioutil.ReadAll(os.Stdin)
+	if err == nil {
+		conf.JSON = string(b)
+	} else {
+		fmt.Printf("err: %s\n", err.Error())
+	}
 
 	return conf, nil
 }
