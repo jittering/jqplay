@@ -29,9 +29,6 @@
             <a href="/" class="navbar-brand"><img src="#{ .Asset "images/logo.png" }" alt="jqplay"></a>
           </div>
           <p class="navbar-text">A playground for <a href="https://stedolan.github.io/jq/" class="navbar-link">jq</a> #{.JQVer}</p>
-          <button type="button" class="btn btn-default navbar-btn pull-right" ng-click="shareSnippet()">
-            <span class="glyphicon glyphicon-share" aria-hidden="true"></span>Share snippet
-          </button>
         </div>
       </nav>
 
@@ -147,7 +144,7 @@
   </div>
 
     <footer class="footer">
-      <p><a href="https://github.com/jingweno/jqplay">View source</a> on GitHub</p>
+      <p><a href="https://github.com/jittering/jqplay">View source</a> on GitHub</p>
     </footer>
 
     <!-- Bootstrap core JavaScript
@@ -160,10 +157,13 @@
     #{ end }
 
     <script>
-      window.jq = {
-        j: #{ .JSON },
-        q: '',
-      };
+      window.defaultJSON = #{ .JSON };
+      if (window.defaultJSON !== '') {
+        window.jq = {
+          j: window.defaultJSON,
+          q: '.',
+        };
+      }
     </script>
     <script type="text/javascript" src="#{ .Asset "js/app.min.#{ TIMESTAMP }.js" }"></script>
 </body></html>

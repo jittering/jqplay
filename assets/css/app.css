@@ -70,13 +70,13 @@ header a {
 .json-editor {
   border: 1px solid #DDD;
   width: 100%;
-  height: 340px;
+  height: 515px;
 }
 
 .result-editor {
   border: 1px solid #DDD;
   width: 100%;
-  height: 425px;
+  height: 600px;
 }
 
 #optionsGroup input {
