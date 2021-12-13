@@ -44,7 +44,7 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 	var j *jq.JQ
 	if err := c.BindJSON(&j); err != nil {
 		err = fmt.Errorf("error parsing JSON: %s", err)
-		h.logger(c).WithError(err).Info("error parsing JSON")
+		logrus.WithError(err).Info("error parsing JSON")
 		c.String(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
@@ -56,7 +56,7 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 	// appending error message in the end if there's any
 	if err := j.Eval(ctx, c.Writer); err != nil {
 		fmt.Fprint(c.Writer, err.Error())
-		h.logger(c).WithError(err).Info("jq error")
+		logrus.WithError(err).Info("jq error")
 	}
 }
 
@@ -84,7 +84,7 @@ func (h *JQHandler) handleJqSharePost(c *gin.Context) {
 func (h *JQHandler) handleJqShareGet(c *gin.Context) {
 	id := c.Param("id")
 
-	h.logger(c).WithField("id", id).Info("snippets not enabled")
+	logrus.WithField("id", id).Info("snippets not enabled")
 	c.Redirect(http.StatusFound, "/")
 }
 
