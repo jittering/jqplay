@@ -37,6 +37,12 @@ type JQ struct {
 	O []JQOpt `json:"o"`
 }
 
+// available options:
+// { name: "slurp", enabled: false },
+// { name: "null-input", enabled: false },
+// { name: "compact-output", enabled: false },
+// { name: "raw-input", enabled: false },
+// { name: "raw-output", enabled: false },
 type JQOpt struct {
 	Name    string `json:"name"`
 	Enabled bool   `json:"enabled"`
