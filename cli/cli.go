@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/owenthereal/jqplay/config"
@@ -20,10 +21,22 @@ type Cli struct {
 	commandEditor *Editor
 	commandOutput BufView
 	message       string
+
+	log []string
 }
 
 func New(conf *config.Config) *Cli {
 	return &Cli{conf: conf}
+
+}
+
+func (c *Cli) exitDebug() {
+	c.tui.Fini()
+	fmt.Println("Caught exit")
+	fmt.Println("replaying log:")
+	for i, l := range c.log {
+		fmt.Printf("%d: %s\n", i, l)
+	}
 }
 
 func (c *Cli) Start() error {
@@ -39,26 +52,22 @@ func (c *Cli) Start() error {
 	// Sometimes, a message may be displayed at the bottom of the screen, with help or other info
 	c.message = defaultMessage
 
+	// debug
+	defer c.exitDebug()
+
 	// Main loop
+	commandsCh := make(chan string)
+	go debounce(time.Millisecond*150, commandsCh, c.runJq)
+
 	lastCommand := ""
 	for {
 		// If user edited the command, immediately run it in background, and
 		// kill the previously running command.
 		command := c.commandEditor.String()
 		if command != lastCommand {
-			// TODO: run jq here
-			// fmt.Println("run jq with: ", command)
-			if command != "" {
-				j := &jq.JQ{J: c.conf.JSON, Q: command}
-				buff := &bytes.Buffer{}
-				if err := j.Eval(context.Background(), buff); err != nil {
-					c.commandOutput.Buf = fmt.Sprintf("jq error: %s", err)
-				} else {
-					c.commandOutput.Buf = buff.String()
-				}
-			} else {
-				c.commandOutput.Buf = c.conf.JSON
-			}
+			c.log = append(c.log, command)
+			commandsCh <- command
+
 			// commandSubprocess.Kill()
 			// if command != "" {
 			// 	commandSubprocess = StartSubprocess(command, stdinCapture, func() { triggerRefresh(tui) })
@@ -76,18 +85,20 @@ func (c *Cli) Start() error {
 		_, h := c.tui.Size()
 		c.drawUI()
 
+		// TODO: reset message to default at some point
+
 		// Handle UI events
 		switch ev := c.tui.PollEvent().(type) {
 		// Key pressed
 		case *tcell.EventKey:
 			// Is it a command editor key?
 			if c.commandEditor.HandleKey(ev) {
-				c.message = ""
+				// c.message = ""
 				continue
 			}
 			// Is it a command output view key?
 			if c.commandOutput.HandleKey(ev, h-1) {
-				c.message = ""
+				// c.message = ""
 				continue
 			}
 			// Some other global key combinations
@@ -105,7 +116,6 @@ func (c *Cli) Start() error {
 				key(tcell.KeyCtrlD),
 				ctrlKey(tcell.KeyCtrlD):
 				// Quit
-				// TODO: print the command in case user did this accidentally
 				return nil
 			case key(tcell.KeyCtrlX),
 				ctrlKey(tcell.KeyCtrlX):
@@ -117,6 +127,24 @@ func (c *Cli) Start() error {
 	}
 
 	return nil
+}
+
+func (c *Cli) runJq(command string) {
+	c.log = append(c.log, fmt.Sprintf("running: %s", command))
+	if command != "" {
+		// TODO: wrap in commandSubprocess? do we need to kill it?
+		j := &jq.JQ{J: c.conf.JSON, Q: command}
+		buff := &bytes.Buffer{}
+		if err := j.Eval(context.Background(), buff); err != nil {
+			c.commandOutput.Buf = fmt.Sprintf("jq error: %s\n--\n%s", err, buff.String())
+		} else {
+			c.commandOutput.Buf = buff.String()
+		}
+	} else {
+		c.commandOutput.Buf = c.conf.JSON
+	}
+	// manually redraw since we run jq async
+	c.triggerRefresh()
 }
 
 func (c *Cli) drawUI() {
@@ -154,4 +182,19 @@ func initTUI() tcell.Screen {
 func die(message string) {
 	os.Stderr.WriteString("error: " + message + "\n")
 	os.Exit(1)
+}
+
+// debounce events received on the given channel, acting only only the last item
+// received in the interval.
+func debounce(interval time.Duration, input chan string, cb func(arg string)) {
+	var item string
+	timer := time.NewTimer(interval)
+	for {
+		select {
+		case item = <-input:
+			timer.Reset(interval)
+		case <-timer.C:
+			cb(item)
+		}
+	}
 }
