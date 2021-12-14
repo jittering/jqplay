@@ -19,6 +19,7 @@ type Cli struct {
 
 	tui           tcell.Screen
 	commandEditor *Editor
+	commandInput  BufView
 	commandOutput BufView
 	message       string
 
@@ -47,8 +48,10 @@ func (c *Cli) Start() error {
 	// The top line of the TUI is an editable command, which will be used
 	// as a pipeline for data we read from stdin
 	c.commandEditor = NewEditor("jq filter> ")
+	// Holds the input JSON for comparison
+	c.commandInput = BufView{Buf: c.conf.JSON}
 	// The rest of the screen is a view of the results of the command
-	c.commandOutput = BufView{Buf: c.conf.JSON}
+	c.commandOutput = BufView{}
 	// Sometimes, a message may be displayed at the bottom of the screen, with help or other info
 	c.message = defaultMessage
 
@@ -111,11 +114,9 @@ func (c *Cli) runLoop() error {
 			switch getKey(ev) {
 			case key(tcell.KeyCtrlS),
 				ctrlKey(tcell.KeyCtrlS):
-				// stdinCapture.Pause(true)
 				c.triggerRefresh()
 			case key(tcell.KeyCtrlQ),
 				ctrlKey(tcell.KeyCtrlQ):
-				// stdinCapture.Pause(false)
 				lastCommand = ":" // Make sure we restart current command
 			case key(tcell.KeyCtrlC),
 				ctrlKey(tcell.KeyCtrlC),
@@ -145,7 +146,7 @@ func (c *Cli) runJq(command string) {
 			c.commandOutput.Buf = buff.String()
 		}
 	} else {
-		c.commandOutput.Buf = c.conf.JSON
+		c.commandOutput.Buf = "[enter jq filter]"
 	}
 	// manually redraw since we run jq async
 	c.triggerRefresh()
@@ -154,9 +155,9 @@ func (c *Cli) runJq(command string) {
 func (c *Cli) drawUI() {
 	// Draw UI
 	w, h := c.tui.Size()
-	// stdinCapture.DrawStatus(TuiRegion(tui, 0, 0, 1, 1))
-	c.commandEditor.DrawTo(TuiRegion(c.tui, 1, 0, w-1, 1), func(x, y int) { c.tui.ShowCursor(x+1, 0) })
-	c.commandOutput.DrawTo(TuiRegion(c.tui, 0, 1, w, h-1))
+	c.commandEditor.DrawTo(TuiRegion(c.tui, 0, 0, w, 1), func(x, y int) { c.tui.ShowCursor(x, 0) })
+	c.commandInput.DrawTo(TuiRegion(c.tui, 0, 1, w/2, h-1))
+	c.commandOutput.DrawTo(TuiRegion(c.tui, w/2+1, 1, w/2, h-1))
 	drawText(TuiRegion(c.tui, 0, h-1, w, 1), whiteOnBlue, c.message)
 	c.tui.Show()
 }
@@ -166,12 +167,7 @@ func (c *Cli) triggerRefresh() {
 }
 
 func initTUI() tcell.Screen {
-	// if isatty.IsTerminal(os.Stdin.Fd()) {
-	// 	die("up requires some data piped on standard input, for example try: `echo hello world | up`")
-	// }
-
 	// Init TUI code
-	// TODO: maybe try gocui or termbox?
 	tui, err := tcell.NewScreen()
 	if err != nil {
 		die(err.Error())
