@@ -2,6 +2,8 @@ github.com/GeertJohan/go.incremental v1.0.0/go.mod h1:6fAjUhbVuX1KcMD3c8TEgVUqmo
 github.com/GeertJohan/go.rice v1.0.2 h1:PtRw+Tg3oa3HYwiDBZyvOJ8LdIyf6lAovJJtr7YOAYk=
 github.com/GeertJohan/go.rice v1.0.2/go.mod h1:af5vUNlDNkCjOZeSGFgIJxDje9qdjsO6hshx0gTmZt4=
 github.com/akavel/rsrc v0.8.0/go.mod h1:uLoCtb9J+EyAqh+26kdrTgmzRBFPGOolLWKpdxkKq+c=
+github.com/awesome-gocui/gocui v1.0.2-0.20211203101141-5799ff90a648 h1:l0jQf4Qg6Y5zZyqaO2vE2wEj05bRFOYLz3Ql9cB1T5Y=
+github.com/awesome-gocui/gocui v1.0.2-0.20211203101141-5799ff90a648/go.mod h1:M2BXkrp7PR97CKnPRT7Rk0+rtswChPtksw/vRAESGpg=
 github.com/codegangsta/negroni v1.0.0 h1:+aYywywx4bnKXWvoWtRfJ91vC59NbEhEY03sZjQhbVY=
 github.com/codegangsta/negroni v1.0.0/go.mod h1:v0y3T5G7Y1UlFfyxFn/QLRU4a2EuNau2iZY63YTKWo0=
 github.com/daaku/go.zipexe v1.0.0 h1:VSOgZtH418pH9L16hC/JrgSNJbbAL26pj7lmD1+CGdY=

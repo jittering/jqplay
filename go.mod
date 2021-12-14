@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/GeertJohan/go.rice v1.0.2
+	github.com/awesome-gocui/gocui v1.0.2-0.20211203101141-5799ff90a648
 	github.com/gdamore/tcell/v2 v2.4.0
 	github.com/joeshaw/envdecode v0.0.0-20170502020559-6326cbed175e
 	github.com/mattn/go-runewidth v0.0.10
