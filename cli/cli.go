@@ -56,6 +56,12 @@ func (c *Cli) Start() error {
 	defer c.exitDebug()
 
 	// Main loop
+	c.runLoop()
+
+	return nil
+}
+
+func (c *Cli) runLoop() error {
 	commandsCh := make(chan string)
 	go debounce(time.Millisecond*150, commandsCh, c.runJq)
 
@@ -125,8 +131,6 @@ func (c *Cli) Start() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (c *Cli) runJq(command string) {
