@@ -102,8 +102,12 @@ func (s *Server) Start(ginMode string) error {
 	} else {
 		go func() {
 			time.Sleep(time.Millisecond * 250)
-			fmt.Println("> opening", url, "in default browser")
-			browser.OpenURL(url)
+			err := browser.OpenURL(url)
+			if err != nil {
+				fmt.Println("> server running at", url)
+			} else {
+				fmt.Println("> opening", url, "in default browser")
+			}
 		}()
 	}
 
