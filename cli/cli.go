@@ -36,6 +36,7 @@ type Cli struct {
 	outputView  *tview.TextView
 
 	editorCh    chan string
+	lastFilter  string
 	lastCommand string
 
 	screenW    int
@@ -82,7 +83,7 @@ func (c *Cli) toggleOpt(name string) {
 	opt := c.opts[name]
 	opt.Enabled = !opt.Enabled
 	c.updateFooter()
-	c.runJq(c.lastCommand)
+	c.runJq(c.lastFilter)
 }
 
 func (c *Cli) updateFooter() {
@@ -195,7 +196,12 @@ func (c *Cli) createViews() {
 }
 
 func (c *Cli) Start() error {
-	defer c.exitDebug()
+	// defer c.exitDebug()
+	defer func() {
+		if c.lastCommand != "" {
+			fmt.Println(c.lastCommand)
+		}
+	}()
 
 	c.app = tview.NewApplication()
 
@@ -271,29 +277,24 @@ func (c *Cli) updateOutput(str string) {
 	})
 }
 
-func (c *Cli) runJq(command string) {
-	// c.log = append(c.log, fmt.Sprintf("running: %s", command))
-	// c.debugLogger.Infof("running: %s", command)
-	c.lastCommand = command
-	if command != "" {
-		// TODO: wrap in commandSubprocess? do we need to kill it?
+func (c *Cli) runJq(filter string) {
+	c.lastFilter = filter
+	if filter != "" {
 		var opts []jq.JQOpt
 		for _, opt := range c.opts {
 			opts = append(opts, *opt)
 		}
-		j := &jq.JQ{J: c.conf.JSON, Q: command, O: opts}
+		j := &jq.JQ{J: c.conf.JSON, Q: filter, O: opts}
+		c.lastCommand = j.CommandString()
 		buff := &bytes.Buffer{}
 		err := j.Eval(context.Background(), buff)
 		str := buff.String()
-		// c.debugLogger.Infof("ran jq with command %s, got error? %s", command, err)
-		// c.debugLogger.Infof("jq output:\n%s", str)
 		if err != nil {
 			c.updateOutput(fmt.Sprintf("jq error: %s\n--\n%s", err, str))
 		} else {
 			c.updateOutput(str)
 		}
 	} else {
-		// c.debugLogger.Infof("skipped running jq, writing default string")
 		c.updateOutput("[enter jq filter]")
 	}
 }

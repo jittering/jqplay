@@ -110,6 +110,14 @@ func (j *JQ) Validate() error {
 	return nil
 }
 
+func (j JQ) CommandString() string {
+	cmd := []string{"jq"}
+	opts := j.Opts()
+	cmd = append(cmd, opts...)
+	cmd = append(cmd, "'"+j.Q+"'")
+	return strings.Join(cmd, " ")
+}
+
 func (j JQ) String() string {
 	return fmt.Sprintf("j=%s, q=%s, o=%v", j.J, j.Q, j.Opts())
 }
