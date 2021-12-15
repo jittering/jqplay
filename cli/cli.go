@@ -35,7 +35,8 @@ type Cli struct {
 	inputView   *tview.TextView
 	outputView  *tview.TextView
 
-	editorCh chan string
+	editorCh    chan string
+	lastCommand string
 
 	screenW    int
 	screenSize ScreenSize
@@ -81,7 +82,7 @@ func (c *Cli) toggleOpt(name string) {
 	opt := c.opts[name]
 	opt.Enabled = !opt.Enabled
 	c.updateFooter()
-	c.runJq()
+	c.runJq(c.lastCommand)
 }
 
 func (c *Cli) updateFooter() {
@@ -265,7 +266,7 @@ func (c *Cli) resizeHook(screen tcell.Screen) {
 }
 
 func (c *Cli) updateOutput(str string) {
-	c.app.QueueUpdateDraw(func() {
+	go c.app.QueueUpdateDraw(func() {
 		c.outputView.Clear().SetText(str).ScrollToBeginning()
 	})
 }
@@ -273,9 +274,14 @@ func (c *Cli) updateOutput(str string) {
 func (c *Cli) runJq(command string) {
 	// c.log = append(c.log, fmt.Sprintf("running: %s", command))
 	// c.debugLogger.Infof("running: %s", command)
+	c.lastCommand = command
 	if command != "" {
 		// TODO: wrap in commandSubprocess? do we need to kill it?
-		j := &jq.JQ{J: c.conf.JSON, Q: command}
+		var opts []jq.JQOpt
+		for _, opt := range c.opts {
+			opts = append(opts, *opt)
+		}
+		j := &jq.JQ{J: c.conf.JSON, Q: command, O: opts}
 		buff := &bytes.Buffer{}
 		err := j.Eval(context.Background(), buff)
 		str := buff.String()
