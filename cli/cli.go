@@ -15,6 +15,15 @@ import (
 
 const defaultMessage = ` [jqplay] ^C exit  PgUp/PgDn/Up/Dn/^</^> scroll`
 
+type ScreenSize int
+
+const (
+	SizeDefault ScreenSize = iota
+	SizeTiny
+	SizeSmall
+	SizeNormal
+)
+
 type Cli struct {
 	conf *config.Config
 
@@ -27,6 +36,9 @@ type Cli struct {
 	outputView  *tview.TextView
 
 	editorCh chan string
+
+	screenW    int
+	screenSize ScreenSize
 
 	opts map[string]*jq.JQOpt
 
@@ -69,10 +81,12 @@ func (c *Cli) toggleOpt(name string) {
 	opt := c.opts[name]
 	opt.Enabled = !opt.Enabled
 	c.updateFooter()
+	c.runJq()
 }
 
 func (c *Cli) updateFooter() {
 	msg := defaultMessage
+
 	o := func(opt *jq.JQOpt, key string) string {
 		if key == "" {
 			key = opt.Name[0:1]
@@ -81,8 +95,16 @@ func (c *Cli) updateFooter() {
 		if opt.Enabled {
 			color = "[green::b]"
 		}
-		return fmt.Sprintf("  [alt+%s %s=%s%t[white::]]", key, opt.Name, color, opt.Enabled)
+		switch c.screenSize {
+		case SizeTiny:
+			return fmt.Sprintf("  [%s%s[white::]]", color, "--"+opt.Name)
+		case SizeSmall:
+			return fmt.Sprintf("  [%s=%s%t[white::]]", opt.Name, color, opt.Enabled)
+		default:
+			return fmt.Sprintf("  [alt+%s %s=%s%t[white::]]", key, opt.Name, color, opt.Enabled)
+		}
 	}
+
 	msg += o(c.opts["slurp"], "")
 	msg += o(c.opts["null-input"], "")
 	msg += o(c.opts["compact-output"], "")
@@ -178,8 +200,18 @@ func (c *Cli) Start() error {
 
 	c.createViews()
 
+	// Add a hook to catch screen resizing
+	drawDebouncer := &Debouncer{}
+	c.app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		drawDebouncer.Do(time.Millisecond*100, func() {
+			c.resizeHook(screen)
+		})
+		return false
+	})
+
 	go debounce(time.Millisecond*150, c.editorCh, c.runJq)
 
+	// custom keybinds at the app level, global shortcuts
 	c.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Modifiers()&tcell.ModAlt != 0 {
 			switch event.Rune() {
@@ -208,6 +240,28 @@ func (c *Cli) Start() error {
 	}
 
 	return nil
+}
+
+func (c *Cli) resizeHook(screen tcell.Screen) {
+	w, _ := screen.Size()
+	if w != c.screenW {
+		c.screenW = w
+		var size ScreenSize
+		if w < 138 {
+			size = SizeTiny
+		} else if w < 166 {
+			size = SizeSmall
+		} else {
+			size = SizeNormal
+		}
+		if size != c.screenSize {
+			// changed
+			c.screenSize = size
+			go c.app.QueueUpdateDraw(func() {
+				c.updateFooter()
+			})
+		}
+	}
 }
 
 func (c *Cli) updateOutput(str string) {
