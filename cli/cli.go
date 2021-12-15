@@ -3,28 +3,32 @@ package cli
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"github.com/awesome-gocui/gocui"
 	"github.com/gdamore/tcell/v2"
 	"github.com/owenthereal/jqplay/config"
 	"github.com/owenthereal/jqplay/jq"
+	"github.com/rivo/tview"
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultMessage = ` ^C exit  PgUp/PgDn/Up/Dn/^</^> scroll  [jqplay]`
+const defaultMessage = ` [jqplay] ^C exit  PgUp/PgDn/Up/Dn/^</^> scroll`
 
 type Cli struct {
 	conf *config.Config
 
-	g          *gocui.Gui
-	editorView *gocui.View
-	inputView  *gocui.View
-	outputView *gocui.View
+	app *tview.Application
+
+	grid        *tview.Grid
+	editorField *tview.InputField
+	footer      *tview.TextView
+	inputView   *tview.TextView
+	outputView  *tview.TextView
 
 	editorCh chan string
+
+	opts map[string]*jq.JQOpt
 
 	log         []string
 	debugLogger *log.Logger
@@ -36,12 +40,23 @@ func New(conf *config.Config) *Cli {
 	dl.Level = log.DebugLevel
 	buf := &bytes.Buffer{}
 	dl.Out = buf
-	return &Cli{conf: conf, editorCh: make(chan string, 10), debugLogger: dl, debugBuf: buf}
+
+	opts := make(map[string]*jq.JQOpt)
+	opts["slurp"] = &jq.JQOpt{"slurp", false}
+	opts["null-input"] = &jq.JQOpt{"null-input", false}
+	opts["compact-output"] = &jq.JQOpt{"compact-output", false}
+	opts["raw-input"] = &jq.JQOpt{"raw-input", false}
+	opts["raw-output"] = &jq.JQOpt{"raw-output", false}
+
+	return &Cli{conf: conf,
+		editorCh:    make(chan string, 10),
+		opts:        opts,
+		debugLogger: dl,
+		debugBuf:    buf,
+	}
 }
 
 func (c *Cli) exitDebug() {
-	// c.tui.Fini()
-	c.g.Close()
 	fmt.Println("Caught exit")
 	fmt.Println("replaying log:")
 	for i, l := range c.log {
@@ -50,141 +65,154 @@ func (c *Cli) exitDebug() {
 	fmt.Println(c.debugBuf)
 }
 
+func (c *Cli) toggleOpt(name string) {
+	opt := c.opts[name]
+	opt.Enabled = !opt.Enabled
+	c.updateFooter()
+}
+
+func (c *Cli) updateFooter() {
+	msg := defaultMessage
+	o := func(opt *jq.JQOpt, key string) string {
+		if key == "" {
+			key = opt.Name[0:1]
+		}
+		color := "[white]"
+		if opt.Enabled {
+			color = "[green::b]"
+		}
+		return fmt.Sprintf("  [alt+%s %s=%s%t[white::]]", key, opt.Name, color, opt.Enabled)
+	}
+	msg += o(c.opts["slurp"], "")
+	msg += o(c.opts["null-input"], "")
+	msg += o(c.opts["compact-output"], "")
+	msg += o(c.opts["raw-input"], "i")
+	msg += o(c.opts["raw-output"], "o")
+
+	c.footer.SetText(msg)
+}
+
+func (c *Cli) createViews() {
+	c.editorField = tview.NewInputField().SetLabel("JQ Filter: ")
+	c.editorField.SetChangedFunc(func(text string) {
+		// c.debugLogger.Infof("added text: %s", text)
+		c.editorCh <- text
+	})
+	c.editorField.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEnter:
+			c.editorCh <- c.editorField.GetText()
+		case tcell.KeyTAB:
+			c.app.SetFocus(c.inputView)
+			c.inputView.SetBorderColor(tcell.ColorRed)
+			c.outputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlack)
+		case tcell.KeyBacktab:
+			c.app.SetFocus(c.outputView)
+			c.outputView.SetBorderColor(tcell.ColorRed)
+			c.inputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlack)
+		}
+	})
+
+	c.footer = tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextColor(tcell.ColorWhite).
+		SetTextAlign(tview.AlignLeft)
+	c.footer.SetBackgroundColor(tcell.ColorBlue)
+	c.updateFooter()
+
+	c.grid = tview.NewGrid().
+		SetRows(1, 0, 1).
+		SetColumns(0, 0, 0).
+		SetBorders(false).
+		AddItem(c.editorField, 0, 0, 1, 3, 0, 0, true).
+		AddItem(c.footer, 2, 0, 1, 3, 0, 0, false)
+
+	c.inputView = tview.NewTextView().SetText(c.conf.JSON).SetWrap(true).SetScrollable(true)
+	c.inputView.SetBorder(true).SetTitle("JSON Input").SetTitleAlign(tview.AlignLeft)
+	c.inputView.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyTAB:
+			c.app.SetFocus(c.outputView)
+			c.outputView.SetBorderColor(tcell.ColorRed)
+			c.inputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlack)
+		case tcell.KeyBacktab:
+			c.app.SetFocus(c.editorField)
+			c.inputView.SetBorderColor(tcell.ColorWhite)
+			c.outputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlue)
+		}
+	})
+
+	c.outputView = tview.NewTextView().SetWrap(true).SetScrollable(true)
+	c.outputView.SetBorder(true).SetTitle("JQ Output").SetTitleAlign(tview.AlignLeft)
+	c.outputView.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyTAB:
+			c.app.SetFocus(c.editorField)
+			c.inputView.SetBorderColor(tcell.ColorWhite)
+			c.outputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlue)
+
+		case tcell.KeyBacktab:
+			c.app.SetFocus(c.inputView)
+			c.inputView.SetBorderColor(tcell.ColorRed)
+			c.outputView.SetBorderColor(tcell.ColorWhite)
+			c.editorField.SetFieldBackgroundColor(tcell.ColorBlack)
+		}
+	})
+
+	flex := tview.NewFlex().
+		AddItem(c.inputView, 0, 1, false).
+		AddItem(c.outputView, 0, 1, false)
+
+	c.grid.AddItem(flex, 1, 0, 1, 3, 0, 0, false)
+}
+
 func (c *Cli) Start() error {
-	g, err := gocui.NewGui(gocui.OutputNormal, true)
-	if err != nil {
-		log.Panicln(err)
-	}
-	defer g.Close()
+	defer c.exitDebug()
 
-	g.Cursor = true
+	c.app = tview.NewApplication()
 
-	g.SetManager(c)
-
-	if err := c.keybindings(g); err != nil {
-		log.Panicln(err)
-	}
+	c.createViews()
 
 	go debounce(time.Millisecond*150, c.editorCh, c.runJq)
 
-	// debug
-	defer c.exitDebug()
-	c.g = g
-
-	if err := g.MainLoop(); err != nil && !errors.Is(err, gocui.ErrQuit) {
-		log.Panicln(err)
-	}
-
-	return nil
-}
-
-// quit program
-func quit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
-}
-
-// vertically scroll the given view
-func scrollView(v *gocui.View, dx, dy int) error {
-	if v != nil {
-		v.Autoscroll = false
-		ox, oy := v.Origin()
-		if err := v.SetOrigin(ox+dx, oy+dy); err != nil {
-			return err
+	c.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Modifiers()&tcell.ModAlt != 0 {
+			switch event.Rune() {
+			case 's':
+				c.toggleOpt("slurp")
+				return nil
+			case 'n':
+				c.toggleOpt("null-input")
+				return nil
+			case 'c':
+				c.toggleOpt("compact-output")
+				return nil
+			case 'i':
+				c.toggleOpt("raw-input")
+				return nil
+			case 'o':
+				c.toggleOpt("raw-output")
+				return nil
+			}
 		}
-	}
-	return nil
-}
+		return event
+	})
 
-// set up keybindings in various views
-func (c *Cli) keybindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
-		return err
+	if err := c.app.SetRoot(c.grid, true).EnableMouse(true).Run(); err != nil {
+		panic(err)
 	}
 
-	// scroll pane
-	if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			scrollView(v, 0, -1)
-			return nil
-		}); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			scrollView(v, 0, 1)
-			return nil
-		}); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Cli) Layout(g *gocui.Gui) error {
-	// c.debugLogger.Infof("layout called")
-
-	maxX, maxY := g.Size()
-
-	// editor panel
-	if v, err := g.SetView("editor", 0, 0, maxX-1, 2, 0); err != nil {
-		if !errors.Is(err, gocui.ErrUnknownView) {
-			return err
-		}
-		v.Title = "Enter JQ Filter"
-		v.Editable = true
-		v.Wrap = false
-		v.Editor = NewCustomEditor(c.editorCh)
-		c.editorView = v
-	}
-
-	// input panel
-	if v, err := g.SetView("input", 0, 3, maxX/2-1, maxY-3, 0); err != nil {
-		if !errors.Is(err, gocui.ErrUnknownView) {
-			return err
-		}
-		v.Title = "JSON Input"
-		v.Highlight = true
-		v.Editable = false
-		v.Wrap = true
-		v.WriteString(c.conf.JSON)
-		c.inputView = v
-	}
-
-	// output panel
-	if v, err := g.SetView("main", maxX/2, 3, maxX-1, maxY-3, 0); err != nil {
-		if !errors.Is(err, gocui.ErrUnknownView) {
-			return err
-		}
-		v.Title = "JQ Output"
-		v.Editable = false
-		v.Wrap = true
-		v.WriteString("[enter jq filter]")
-		c.outputView = v
-	}
-
-	// help panel
-	if v, err := g.SetView("help", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
-		if !errors.Is(err, gocui.ErrUnknownView) {
-			return err
-		}
-		v.Frame = false
-		v.Editable = false
-		v.Wrap = true
-		v.BgColor = gocui.Attribute(tcell.ColorBlue)
-		v.FgColor = gocui.Attribute(tcell.ColorWhite)
-		v.WriteString(defaultMessage)
-	}
-
-	if _, err := g.SetCurrentView("editor"); err != nil {
-		return err
-	}
 	return nil
 }
 
 func (c *Cli) updateOutput(str string) {
-	c.g.Update(func(g *gocui.Gui) error {
-		c.outputView.Clear()
-		c.outputView.WriteString(str)
-		return nil
+	c.app.QueueUpdateDraw(func() {
+		c.outputView.Clear().SetText(str).ScrollToBeginning()
 	})
 }
 
