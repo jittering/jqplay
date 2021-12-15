@@ -17,6 +17,8 @@ type Config struct {
 	AssetHost string `env:"ASSET_HOST"`
 	JQVer     string
 
+	Cli     bool
+	Web     bool
 	NoOpen  bool
 	Verbose bool
 
@@ -36,6 +38,8 @@ func Load() (*Config, error) {
 
 	conf.JQVer = jq.Version
 
+	flag.BoolVar(&conf.Web, "web", true, "Web mode")
+	flag.BoolVar(&conf.Cli, "cli", false, "CLI mode")
 	flag.BoolVar(&conf.Verbose, "verbose", false, "Verbose output")
 	flag.BoolVar(&conf.NoOpen, "no-open", false, "Do not open browser on startup")
 	flag.Parse()

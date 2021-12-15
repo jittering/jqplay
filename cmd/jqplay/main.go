@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 
+	"github.com/owenthereal/jqplay/cli"
 	"github.com/owenthereal/jqplay/config"
 	"github.com/owenthereal/jqplay/jq"
 	"github.com/owenthereal/jqplay/server"
@@ -33,6 +34,13 @@ func main() {
 		"host": conf.Host,
 		"port": conf.Port,
 	}).Infof("Starting server at %s:%s", conf.Host, conf.Port)
+
+	if conf.Cli {
+		// run CLI interface
+		cli.New(conf).Start()
+		return
+	}
+
 	srv := server.New(conf)
 	err = srv.Start(GinMode)
 	if err != nil && !strings.Contains(err.Error(), "Server closed") {
