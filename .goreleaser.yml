@@ -3,6 +3,7 @@ before:
   hooks:
     - make clean
     - npm install
+    - go generate ./...
 builds:
   - main: ./cmd/jqplay/
     env:
@@ -36,3 +37,24 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  - tap:
+      owner: jittering
+      name: homebrew-kegs
+
+    name: jqplay
+
+    url_template: "https://github.com/jittering/jqplay/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    commit_author:
+      name: Chetan Sarva (via goreleaser)
+      email: chetan@pixelcop.net
+
+    folder: Formula
+
+    homepage: "https://github.com/jittering/jqplay"
+    description: "A local playground for jq"
+
+    install: |
+      bin.install "jqplay"
