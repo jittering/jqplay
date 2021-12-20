@@ -19,6 +19,10 @@ curl -s https://jsonplaceholder.typicode.com/todos/1 | jqplay
 
 ## Installation
 
+`jqplay-cli` is built as a single binary containing everything needed to run,
+including all static files for the web frontend. Simply download and install it
+with one of the following methods:
+
 via homebrew (mac or linux):
 
 ```sh
@@ -31,7 +35,12 @@ Download a [pre-built binary](https://github.com/jittering/jqplay/releases) or
 build it from source:
 
 ```sh
-go get github.com/jittering/jqplay/cmd/jqplay
+# requires go, node, npm
+git clone https://github.com/jittering/jqplay.git
+cd jqplay
+make deps
+# binary will be written to bin/jqplay
+make build
 ```
 
 ## Usage
@@ -40,15 +49,17 @@ go get github.com/jittering/jqplay/cmd/jqplay
 Usage of jqplay:
 
   -cli
-    	CLI mode
+      CLI mode
   -no-open
-    	Do not open browser on startup
+      Do not open browser on startup
   -verbose
-    	Verbose output
+      Verbose output
   -web
-    	Web mode (default true)
+      Web mode (default true)
 ```
 
 ## License
 
-jqplay is released under the MIT license. See [LICENSE.md](https://github.com/jingweno/jqplay/blob/master/LICENSE.md).
+jqplay-cli is released under the [MIT license](./LICENSE.md).
+
+Based on jqplay, also under the [MIT license](https://github.com/owenthereal/jqplay/blob/master/LICENSE.md).
