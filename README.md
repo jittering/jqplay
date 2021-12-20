@@ -7,7 +7,7 @@ third party server.
 
 ![web-based](./demo/web.gif)
 
-You can use the default web-based UI or a [complete terminal-based UI](./demo/term.gif),
+You can use the default web-based UI or a [complete terminal-based UI](./demo/README.md#terminal-ui),
 all without hitting the internet.
 
 ## Quickstart
