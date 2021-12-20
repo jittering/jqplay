@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/pkg/errors"
@@ -54,6 +55,7 @@ func loadBundledJq() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Infof("Trying to open bundled %s", osBin)
 	bin, err := statikFS.Open(osBin)
 	if err != nil {
 		return errors.Wrapf(err, "binary not found for %s %s", runtime.GOOS, runtime.GOARCH)
@@ -64,7 +66,12 @@ func loadBundledJq() error {
 	defer bin.Close()
 
 	// found the proper bin, lets copy it to a temp location
-	temp, err := ioutil.TempFile("", "jq")
+	pattern := "jq"
+	if strings.HasSuffix(osBin, ".exe") {
+		pattern = "jq-*.exe"
+	}
+	log.Infof("Opening temp file with pattern %s", pattern)
+	temp, err := ioutil.TempFile("", pattern)
 	if err != nil {
 		return errors.Wrap(err, "failed to create temp file")
 	}
@@ -81,6 +88,7 @@ func loadBundledJq() error {
 		}
 	}()
 
+	log.Infof("Writing temp jq at %s", temp.Name())
 	_, err = io.Copy(temp, bin)
 	if err != nil {
 		return errors.Wrap(err, "failed to copy bundled bin")
