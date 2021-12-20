@@ -22,3 +22,5 @@ run:
 deps:
 	cat cmd/tools/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
+release:
+	goreleaser release --rm-dist --parallelism 1 --skip-validate
