@@ -1,9 +1,11 @@
 project_name: jqplay
+
 before:
   hooks:
     - make clean
     - npm install
     - go generate ./...
+
 builds:
   - main: ./cmd/jqplay/
     env:
@@ -20,17 +22,22 @@ builds:
       pre:
         - rm -rf */statik/
         - bin/generate {{ .Target }}
+
 archives:
-  - replacements:
+  - format: binary
+    replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
       386: i386
       amd64: x86_64
+
 checksum:
   name_template: "checksums.txt"
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:
@@ -58,4 +65,4 @@ brews:
     description: "A local playground for jq"
 
     install: |
-      bin.install "jqplay"
+      bin.install "{{ .ArtifactName }}" => "jqplay"
