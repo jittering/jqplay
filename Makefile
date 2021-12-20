@@ -18,3 +18,7 @@ build: clean
 
 run:
 	go run ./cmd/jqplay -verbose
+
+deps:
+	cat cmd/tools/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
+
