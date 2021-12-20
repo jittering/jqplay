@@ -63,6 +63,3 @@ brews:
 
     homepage: "https://github.com/jittering/jqplay"
     description: "A local playground for jq"
-
-    install: |
-      bin.install "{{ .ArtifactName }}" => "jqplay"
