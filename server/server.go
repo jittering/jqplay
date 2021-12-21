@@ -111,6 +111,12 @@ func (s *Server) Start(ginMode string) error {
 		}()
 	}
 
+	defer func() {
+		if h.lastCommand != "" {
+			fmt.Println(h.lastCommand)
+		}
+	}()
+
 	<-stop
 	fmt.Println()
 	ctx, cancel := context.WithTimeout(context.Background(), 28*time.Second)

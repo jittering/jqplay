@@ -33,7 +33,8 @@ func (c *JQHandlerContext) ShouldInitJQ() bool {
 }
 
 type JQHandler struct {
-	Config *config.Config
+	Config      *config.Config
+	lastCommand string
 }
 
 func (h *JQHandler) handleIndex(c *gin.Context) {
@@ -58,6 +59,7 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 		fmt.Fprint(c.Writer, err.Error())
 		logrus.WithError(err).Info("jq error")
 	}
+	h.lastCommand = j.CommandString()
 }
 
 func (h *JQHandler) handleJqGet(c *gin.Context) {
