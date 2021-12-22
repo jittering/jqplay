@@ -4,10 +4,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"html/template"
+	"mime"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -33,20 +34,20 @@ func (s *Server) Start(ginMode string) error {
 
 	h := &JQHandler{Config: s.Config}
 
-	var err error
+	// var err error
 
 	conf := rice.Config{
 		LocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS, rice.LocateWorkingDirectory},
 	}
 
-	publicBox := conf.MustFindBox("public/root")
+	publicBox := conf.MustFindBox("../web/public")
 
-	tmpl := template.New("index.tmpl")
-	tmpl.Delims("#{", "}")
-	tmpl, err = tmpl.Parse(publicBox.MustString("index.tmpl"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	// tmpl := template.New("index.tmpl")
+	// tmpl.Delims("#{", "}")
+	// tmpl, err = tmpl.Parse(publicBox.MustString("index.tmpl"))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	gin.SetMode(ginMode)
 	router := gin.New()
@@ -55,29 +56,27 @@ func (s *Server) Start(ginMode string) error {
 		middleware.LimitContentLength(10),
 		gin.Recovery(),
 	)
-	router.SetHTMLTemplate(tmpl)
+	if s.Config.Verbose {
+		router.Use(middleware.Logger())
+	}
+	// router.SetHTMLTemplate(tmpl)
 
-	jsBox := conf.MustFindBox("public/js")
-	router.StaticFS("/js", jsBox.HTTPBox())
-	router.StaticFS("/css", conf.MustFindBox("public/css").HTTPBox())
-	router.StaticFS("/images", conf.MustFindBox("public/images").HTTPBox())
-	router.StaticFS("/fonts", conf.MustFindBox("public/bower_components/bootstrap/dist/fonts").HTTPBox())
+	// router.StaticFS("/css", conf.MustFindBox("public/css").HTTPBox())
+	// router.StaticFS("/images", conf.MustFindBox("../web/public/images").HTTPBox())
+	// router.StaticFS("/fonts", conf.MustFindBox("public/bower_components/bootstrap/dist/fonts").HTTPBox())
 
-	workerFile := jsBox.MustString("worker-xquery.js")
-	router.GET("/worker-xquery.js", func(c *gin.Context) {
-		c.String(200, workerFile)
-	})
-
-	robotsFile := publicBox.MustString("robots.txt")
-	router.GET("/robots.txt", func(c *gin.Context) {
-		c.String(200, robotsFile)
-	})
-
-	router.GET("/", h.handleIndex)
+	// dynamic routes
 	router.GET("/jq", h.handleJqGet)
 	router.POST("/jq", h.handleJqPost)
-	router.POST("/s", h.handleJqSharePost)
-	router.GET("/s/:id", h.handleJqShareGet)
+	// router.POST("/s", h.handleJqSharePost)
+	// router.GET("/s/:id", h.handleJqShareGet)
+
+	// static files
+	staticRoute(router, "/", publicBox, "index.html")
+	staticRoute(router, "/robots.txt", publicBox, "robots.txt")
+	staticRoute(router, "/favicon.png", publicBox, "favicon.png")
+	router.StaticFS("/images", conf.MustFindBox("../web/public/images").HTTPBox())
+	router.StaticFS("/build", conf.MustFindBox("../web/public/build").HTTPBox())
 
 	srv := &http.Server{
 		Addr:    s.Config.Host + ":" + s.Config.Port,
@@ -123,4 +122,13 @@ func (s *Server) Start(ginMode string) error {
 	defer cancel()
 
 	return srv.Shutdown(ctx)
+}
+
+func staticRoute(router *gin.Engine, path string, box *rice.Box, filename string) {
+	str := box.MustString(filename)
+	ctype := mime.TypeByExtension(filepath.Ext(filename))
+	router.GET(path, func(c *gin.Context) {
+		c.Header("Content-Type", ctype)
+		c.String(200, str)
+	})
 }

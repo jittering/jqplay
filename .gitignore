@@ -1,12 +1,12 @@
 bin/jqplay
 gin-bin
 node_modules
-public/
-public/bower_components
-public/css
-public/js
-public/root/index.tmpl
-assets/tmp
+/public/
+/public/bower_components
+/public/css
+/public/js
+/public/root/index.tmpl
+/assets/tmp
 .env
 
 /**/rice-box.go
@@ -16,4 +16,3 @@ dist/
 .vscode/
 .DS_Store
 .nvmrc
-
