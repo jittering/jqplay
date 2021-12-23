@@ -21,6 +21,10 @@ export class Jq {
       { name: "raw-output", enabled: false },
     ];
   }
+
+  getOpt(name) {
+    return this.o.find((el) => el.name === name);
+  }
 }
 
 export default class Service {

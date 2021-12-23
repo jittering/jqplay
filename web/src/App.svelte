@@ -9,6 +9,12 @@
   let result = "";
   let jqVersion = "...";
 
+  const slurp = jq.getOpt("slurp");
+  const nullInput = jq.getOpt("null-input");
+  const compactOutput = jq.getOpt("compact-output");
+  const rawInput = jq.getOpt("raw-input");
+  const rawOutput = jq.getOpt("raw-output");
+
   const service = new Service();
   service.getJqVersion().then((ver) => {
     jqVersion = ver;
@@ -66,11 +72,31 @@
       <div class="outputs">
         <h6 class="">Result</h6>
         <div class="flex">
-          <Checkbox name="compact" label="Compact Output" value="1" />
-          <Checkbox label="Null Input" />
-          <Checkbox label="Raw Input" />
-          <Checkbox label="Raw Output" />
-          <Checkbox label="Slurp" />
+          <Checkbox
+            label="Compact Output"
+            bind:checked={compactOutput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            label="Null Input"
+            bind:checked={nullInput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            label="Raw Input"
+            bind:checked={rawInput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            label="Raw Output"
+            bind:checked={rawOutput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            label="Slurp"
+            bind:checked={slurp.enabled}
+            on:change={onChangeJq(jq)}
+          />
         </div>
         <TextField
           bind:value={result}
