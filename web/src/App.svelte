@@ -1,7 +1,14 @@
 <script lang="ts">
   import { TextField, Checkbox, Chip } from "smelte";
   import "smelte/src/tailwind.css";
+  import Service from "./service";
   export let global: any;
+
+  const service = new Service();
+  $: jqVersion = "...";
+  service.getJqVersion().then((ver) => {
+    jqVersion = ver;
+  });
 
   function onClickDocumentation() {
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
@@ -10,17 +17,17 @@
 
 <main>
   <div class="nav container max-w-none p-2">
-    <div class="inline-block">
+    <div class="inline-block align-middle">
       <a href="/" class="navbar-brand"
         ><img src="images/logo.png" alt="jqplay" /></a
       >
     </div>
-    <div class="inline-block">
+    <div class="inline-block text-sm align-middle ml-4">
       A playground for <a
         href="https://stedolan.github.io/jq/"
         class="navbar-link">jq</a
       >
-      TODO_JQ_VER <!-- TODO: -->
+      {jqVersion}
     </div>
     <p class="inline-block docs">
       <Chip icon="article" outlined on:click={onClickDocumentation}

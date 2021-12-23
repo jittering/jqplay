@@ -62,6 +62,10 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 	h.lastCommand = j.CommandString()
 }
 
+func (h *JQHandler) handleJqVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, h.Config.JQVer)
+}
+
 func (h *JQHandler) handleJqGet(c *gin.Context) {
 	jq := &jq.JQ{
 		J: c.Query("j"),

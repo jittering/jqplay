@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	conf.JQVer = jq.Version
 
 	log.WithFields(log.Fields{
 		"version": jq.Version,

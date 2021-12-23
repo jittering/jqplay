@@ -17,7 +17,7 @@ build: clean
 	echo "built bin/jqplay"
 
 run:
-	go run ./cmd/jqplay -verbose
+	go run ./cmd/jqplay -verbose -no-open
 
 deps:
 	cat cmd/tools/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
