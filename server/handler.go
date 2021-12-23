@@ -37,10 +37,6 @@ type JQHandler struct {
 	lastCommand string
 }
 
-func (h *JQHandler) handleIndex(c *gin.Context) {
-	c.HTML(200, "index.tmpl", &JQHandlerContext{Config: h.Config, JSON: h.Config.JSON})
-}
-
 func (h *JQHandler) handleJqPost(c *gin.Context) {
 	var j *jq.JQ
 	if err := c.BindJSON(&j); err != nil {
@@ -60,6 +56,10 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 		logrus.WithError(err).Info("jq error")
 	}
 	h.lastCommand = j.CommandString()
+}
+
+func (h *JQHandler) handleJqInput(c *gin.Context) {
+	c.JSON(http.StatusOK, h.Config.JSON)
 }
 
 func (h *JQHandler) handleJqVersion(c *gin.Context) {

@@ -66,6 +66,7 @@ func (s *Server) Start(ginMode string) error {
 	// router.StaticFS("/fonts", conf.MustFindBox("public/bower_components/bootstrap/dist/fonts").HTTPBox())
 
 	// dynamic routes
+	router.GET("/jq/input", h.handleJqInput)
 	router.GET("/jq/version", h.handleJqVersion)
 	router.GET("/jq", h.handleJqGet)
 	router.POST("/jq", h.handleJqPost)

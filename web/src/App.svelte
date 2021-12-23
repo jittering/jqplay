@@ -1,18 +1,35 @@
 <script lang="ts">
-  import { TextField, Checkbox, Chip } from "smelte";
   import "smelte/src/tailwind.css";
-  import Service from "./service";
+  import { TextField, Checkbox, Chip } from "smelte";
+  import Service, { Jq } from "./service";
+  import { debounce } from "lodash-es";
+
   export let global: any;
+  const jq = new Jq();
+  let result = "";
+  let jqVersion = "...";
 
   const service = new Service();
-  $: jqVersion = "...";
   service.getJqVersion().then((ver) => {
     jqVersion = ver;
   });
+  service.getJqInput().then((json) => {
+    jq.j = json;
+  });
+
+  $: {
+    onChangeJq(jq);
+  }
 
   function onClickDocumentation() {
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
   }
+
+  const onChangeJq = debounce((jq) => {
+    service.runJq(jq).then((output) => {
+      result = output;
+    });
+  }, 250);
 </script>
 
 <main>
@@ -40,10 +57,10 @@
     <div class="grid grid-cols-2 gap-4 h-600px">
       <div class="inputs">
         <h6>JQ Filter</h6>
-        <TextField outlined />
+        <TextField bind:value={jq.q} outlined />
 
         <h6>JSON</h6>
-        <TextField textarea outlined />
+        <TextField bind:value={jq.j} textarea outlined />
       </div>
 
       <div class="outputs">
@@ -55,7 +72,14 @@
           <Checkbox label="Raw Output" />
           <Checkbox label="Slurp" />
         </div>
-        <TextField label="Output" placeholder="" textarea outlined />
+        <TextField
+          bind:value={result}
+          label="Output"
+          placeholder=""
+          textarea
+          outlined
+          readonly
+        />
       </div>
     </div>
   </div>
