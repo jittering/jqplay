@@ -1,6 +1,6 @@
 <script lang="ts">
   import "smelte/src/tailwind.css";
-  import { TextField, Checkbox, Chip } from "smelte";
+  import { TextField, Checkbox, Chip, ProgressLinear } from "smelte";
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
 
@@ -32,10 +32,38 @@
   }
 
   const onChangeJq = debounce((jq) => {
+    startProgressBar();
     service.runJq(jq).then((output) => {
+      progress = -1;
+      clearTimeout(progressTimeoutId);
       result = output;
     });
   }, 250);
+
+  // progressbar
+  let progress = -1;
+  let progressTimeoutId = null;
+  function startProgressBar() {
+    $: {
+      if (progress < 0 && progressTimeoutId !== null) {
+        clearTimeout(progressTimeoutId);
+      }
+    }
+    progress = 0;
+    function next() {
+      progressTimeoutId = setTimeout(() => {
+        if (progress < 0) {
+          return;
+        }
+        if (progress === 100) {
+          progress = 0;
+        }
+        progress += 1;
+        next();
+      }, 25);
+    }
+    next();
+  }
 </script>
 
 <main>
@@ -58,6 +86,10 @@
       >
     </p>
   </div>
+
+  {#if progress >= 0}
+    <ProgressLinear {progress} />
+  {/if}
 
   <div class="main container max-w-none p-2">
     <div class="grid grid-cols-2 gap-4 h-600px">
