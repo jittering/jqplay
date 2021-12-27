@@ -76,14 +76,14 @@
 
 <style global lang="postcss">
   /* BASICS */
-  :global(.cm-editor) {
+  .cm-editor {
     height: var(--cm-height, 300px);
     direction: ltr;
     color: var(--cm-text-color);
     background: var(--cm-background-color);
   }
 
-  :global(.cm-editor) {
+  .cm-editor {
     .cm-scroller {
       font-family: "SF Mono", "DejaVu Sans Mono", Menlo, Monaco, Consolas,
         Courier, monospace !important;

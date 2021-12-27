@@ -28,10 +28,6 @@
     jqVersion = ver;
   });
 
-  $: {
-    onChangeJq(jq);
-  }
-
   onMount(() => {
     // load initial json, if avail
     service.getJqInput().then((json) => {
@@ -46,6 +42,10 @@
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
   }
 
+  // run jq on input/filter/option changes
+  $: {
+    onChangeJq(jq);
+  }
   const onChangeJq = debounce((jq) => {
     startProgressBar();
     service
@@ -186,6 +186,13 @@
       textarea {
         height: 220px;
       }
+    }
+  }
+
+  :global {
+    .commandline input {
+      font-family: "SF Mono", "DejaVu Sans Mono", Menlo, Monaco, Consolas,
+        Courier, monospace !important;
     }
   }
 
