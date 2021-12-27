@@ -75,8 +75,9 @@ func (s *Server) Start(ginMode string) error {
 
 	// static files
 	staticRoute(router, "/", publicBox, "index.html")
-	staticRoute(router, "/robots.txt", publicBox, "robots.txt")
-	staticRoute(router, "/favicon.png", publicBox, "favicon.png")
+	staticRoute(router, "", publicBox, "material-icons.css")
+	staticRoute(router, "", publicBox, "robots.txt")
+	staticRoute(router, "", publicBox, "favicon.png")
 	router.StaticFS("/images", conf.MustFindBox("../web/public/images").HTTPBox())
 	router.StaticFS("/build", conf.MustFindBox("../web/public/build").HTTPBox())
 
@@ -127,6 +128,9 @@ func (s *Server) Start(ginMode string) error {
 }
 
 func staticRoute(router *gin.Engine, path string, box *rice.Box, filename string) {
+	if path == "" {
+		path = "/" + filename
+	}
 	str := box.MustString(filename)
 	ctype := mime.TypeByExtension(filepath.Ext(filename))
 	router.GET(path, func(c *gin.Context) {
