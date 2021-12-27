@@ -6,11 +6,13 @@
 
   import { json as langJson } from "@codemirror/lang-json";
   import CodeMirror from "./CodeMirror.svelte";
+  import { onMount } from "svelte";
 
   export let global: any;
   const jq = new Jq();
   let result = "";
   let jqVersion = "...";
+  let commandLine = "";
 
   const langs = [langJson()];
   let jsonInputHeight = "500px";
@@ -30,7 +32,7 @@
     onChangeJq(jq);
   }
 
-  window.onload = () => {
+  onMount(() => {
     // load initial json, if avail
     service.getJqInput().then((json) => {
       if (!json) {
@@ -38,7 +40,7 @@
       }
       jq.j = json;
     });
-  };
+  });
 
   function onClickDocumentation() {
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
@@ -46,11 +48,18 @@
 
   const onChangeJq = debounce((jq) => {
     startProgressBar();
-    service.runJq(jq).then((output) => {
-      progress = -1;
-      clearTimeout(progressTimeoutId);
-      result = output;
-    });
+    service
+      .runJq(jq)
+      .then((output) => {
+        progress = -1;
+        clearTimeout(progressTimeoutId);
+        result = output;
+      })
+      .then(() => {
+        service.getJqCommandLine(jq).then((output) => {
+          commandLine = output;
+        });
+      });
   }, 250);
 
   // progressbar
@@ -156,6 +165,10 @@
         />
       </div>
     </div>
+
+    <div class="commandline">
+      <TextField bind:value={commandLine} label="Command Line" outlined />
+    </div>
   </div>
 </main>
 
@@ -164,7 +177,7 @@
   div.main {
     @apply h-full;
     .grid {
-      @apply h-full;
+      /* @apply h-full; */
     }
   }
 

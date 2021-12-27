@@ -36,6 +36,14 @@ export default class Service {
     return axios.get("/jq/version").then((res) => res.data);
   }
 
+  getJqCommandLine(data: Jq) {
+    return axios.post("/jq/commandline", {
+      j: data.j,
+      q: data.q,
+      o: data.o
+    }).then((res) => res.data);
+  }
+
   runJq(data: Jq) {
     return axios.post("/jq", {
       j: data.j,

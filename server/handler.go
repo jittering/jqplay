@@ -58,6 +58,17 @@ func (h *JQHandler) handleJqPost(c *gin.Context) {
 	h.lastCommand = j.CommandString()
 }
 
+func (h *JQHandler) handleJqCommandLine(c *gin.Context) {
+	var j *jq.JQ
+	if err := c.BindJSON(&j); err != nil {
+		err = fmt.Errorf("error parsing JSON: %s", err)
+		logrus.WithError(err).Info("error parsing JSON")
+		c.String(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, j.CommandString())
+}
+
 func (h *JQHandler) handleJqInput(c *gin.Context) {
 	c.JSON(http.StatusOK, h.Config.JSON)
 }

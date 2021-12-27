@@ -67,6 +67,7 @@ func (s *Server) Start(ginMode string) error {
 
 	// dynamic routes
 	router.GET("/jq/input", h.handleJqInput)
+	router.POST("/jq/commandline", h.handleJqCommandLine)
 	router.GET("/jq/version", h.handleJqVersion)
 	router.GET("/jq", h.handleJqGet)
 	router.POST("/jq", h.handleJqPost)
