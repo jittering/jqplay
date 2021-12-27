@@ -148,7 +148,12 @@
             on:change={onChangeJq(jq)}
           />
         </div>
-        <CodeMirror class="json_output" bind:value={result} {langs} />
+        <CodeMirror
+          class="json_output"
+          bind:value={result}
+          {langs}
+          readOnly={true}
+        />
       </div>
     </div>
   </div>

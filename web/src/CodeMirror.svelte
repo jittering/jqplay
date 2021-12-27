@@ -9,7 +9,7 @@
   let classes: string = "";
   export let editorView: EditorView = null;
   export let langs: Array<LanguageSupport>;
-  export let editor = null;
+  export let readOnly: boolean = false;
   export let options = {};
   export let value: string;
   export { classes as class };
@@ -52,13 +52,16 @@
 
   function updateState(value: string, langs: Array<LanguageSupport>) {
     if (lastValue === value) {
-      console.log("skipping state change");
       return;
     }
-    console.log("updating state");
     let editorState = EditorState.create({
       doc: value,
-      extensions: [basicSetup, onUpdate, ...langs],
+      extensions: [
+        basicSetup,
+        onUpdate,
+        ...langs,
+        EditorView.editable.of(!readOnly),
+      ],
     });
     editorView.setState(editorState);
     lastValue = value;
@@ -66,16 +69,6 @@
 
   $: if (editorView) {
     updateState(value, langs);
-    // const pos = editor.getCursor();
-
-    // editor.setValue(value);
-    // editor.setCursor(pos);
-  }
-
-  $: if (editor) {
-    Object.entries(options).forEach(([key, value]) => {
-      editor.setOption(key, value);
-    });
   }
 </script>
 
@@ -84,10 +77,16 @@
 <style global lang="postcss">
   /* BASICS */
   :global(.cm-editor) {
-    font-family: monospace;
     height: var(--cm-height, 300px);
     direction: ltr;
     color: var(--cm-text-color);
     background: var(--cm-background-color);
+  }
+
+  :global(.cm-editor) {
+    .cm-scroller {
+      font-family: "SF Mono", "DejaVu Sans Mono", Menlo, Monaco, Consolas,
+        Courier, monospace !important;
+    }
   }
 </style>
