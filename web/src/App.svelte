@@ -1,12 +1,13 @@
 <script lang="ts">
   import "smelte/src/tailwind.css";
-  import { TextField, Checkbox, Chip, ProgressLinear } from "smelte";
+  import { TextField, Checkbox, Chip, ProgressLinear, Button } from "smelte";
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
 
   import { json as langJson } from "@codemirror/lang-json";
   import CodeMirror from "./CodeMirror.svelte";
   import { onMount } from "svelte";
+  import { samplesLeft, samplesRight } from "./samples";
 
   export let global: any;
   const jq = new Jq();
@@ -86,6 +87,12 @@
     }
     next();
   }
+
+  // load cheatsheet sample
+  function loadSample(sample) {
+    jq.j = sample.input_j;
+    jq.q = sample.input_q;
+  }
 </script>
 
 <main>
@@ -130,28 +137,32 @@
 
       <div class="outputs">
         <h6 class="">Result</h6>
-        <div class="flex">
+        <div class="jq_options flex">
           <Checkbox
             label="Compact Output"
             bind:checked={compactOutput.enabled}
             on:change={onChangeJq(jq)}
           />
           <Checkbox
+            class="ml-2"
             label="Null Input"
             bind:checked={nullInput.enabled}
             on:change={onChangeJq(jq)}
           />
           <Checkbox
+            class="ml-2"
             label="Raw Input"
             bind:checked={rawInput.enabled}
             on:change={onChangeJq(jq)}
           />
           <Checkbox
+            class="ml-2"
             label="Raw Output"
             bind:checked={rawOutput.enabled}
             on:change={onChangeJq(jq)}
           />
           <Checkbox
+            class="ml-2"
             label="Slurp"
             bind:checked={slurp.enabled}
             on:change={onChangeJq(jq)}
@@ -166,8 +177,52 @@
       </div>
     </div>
 
-    <div class="commandline">
-      <TextField bind:value={commandLine} label="Command Line" outlined />
+    <div class="commandline mt-8 border">
+      <h6 class="text-center pt-4 pb-4">Command Line</h6>
+      <div class="text-center mt-2 mb-4"><code>{commandLine}</code></div>
+    </div>
+
+    <div class="cheatsheet border">
+      <h6 class="text-center pt-4 pb-4">Cheatsheet</h6>
+      <div class="grid grid-cols-2 gap-4 p-4">
+        <table class="table-auto">
+          <tbody>
+            {#each samplesLeft as sample}
+              <tr class="border-t">
+                <td>
+                  <code>{sample.code}</code>
+                </td>
+                <td>{sample.text}</td>
+                <td>
+                  <Button
+                    icon="assignment"
+                    text
+                    light
+                    flat
+                    on:click={() => loadSample(sample)}
+                  />
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+
+        <table class="table-auto">
+          <tbody>
+            {#each samplesRight as sample}
+              <tr class="border-t">
+                <td>
+                  <code>{sample.code}</code>
+                </td>
+                <td>{sample.text}</td>
+                <td>
+                  <Button icon="assignment" text light flat />
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </main>
@@ -175,7 +230,7 @@
 <style>
   main,
   div.main {
-    @apply h-full;
+    /* @apply h-full; */
     .grid {
       /* @apply h-full; */
     }
@@ -207,5 +262,36 @@
 
   .main {
     height: 600px;
+  }
+
+  /* reduce checkbox padding */
+  :global {
+    .jq_options {
+      label {
+        padding-left: 0 !important;
+      }
+    }
+  }
+
+  .cheatsheet,
+  .commandline {
+    h6 {
+      background-color: #f5f5f5;
+    }
+  }
+
+  code {
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+  }
+
+  :global {
+    .cheatsheet {
+      th:first-child,
+      td:first-child {
+        border-right-width: 0;
+      }
+    }
   }
 </style>

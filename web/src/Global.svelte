@@ -3,5 +3,6 @@
   html,
   body {
     @apply h-full;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 </style>
