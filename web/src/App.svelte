@@ -4,10 +4,16 @@
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
 
+  import { json as langJson } from "@codemirror/lang-json";
+  import CodeMirror from "./CodeMirror.svelte";
+
   export let global: any;
   const jq = new Jq();
   let result = "";
   let jqVersion = "...";
+
+  const langs = [langJson()];
+  let jsonInputHeight = "500px";
 
   const slurp = jq.getOpt("slurp");
   const nullInput = jq.getOpt("null-input");
@@ -19,13 +25,20 @@
   service.getJqVersion().then((ver) => {
     jqVersion = ver;
   });
-  service.getJqInput().then((json) => {
-    jq.j = json;
-  });
 
   $: {
     onChangeJq(jq);
   }
+
+  window.onload = () => {
+    // load initial json, if avail
+    service.getJqInput().then((json) => {
+      if (!json) {
+        json = "";
+      }
+      jq.j = json;
+    });
+  };
 
   function onClickDocumentation() {
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
@@ -98,7 +111,12 @@
         <TextField bind:value={jq.q} outlined />
 
         <h6>JSON</h6>
-        <TextField bind:value={jq.j} textarea outlined />
+        <CodeMirror
+          class="json_input"
+          bind:value={jq.j}
+          {langs}
+          --cm-height={jsonInputHeight}
+        />
       </div>
 
       <div class="outputs">
@@ -130,14 +148,7 @@
             on:change={onChangeJq(jq)}
           />
         </div>
-        <TextField
-          bind:value={result}
-          label="Output"
-          placeholder=""
-          textarea
-          outlined
-          readonly
-        />
+        <CodeMirror class="json_output" bind:value={result} {langs} />
       </div>
     </div>
   </div>
