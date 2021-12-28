@@ -22,9 +22,8 @@
 
   const onUpdate = EditorView.updateListener.of(
     debounce((v: ViewUpdate) => {
-      if (!v.docChanged) {
-        return;
-      }
+      // always check if the string changed, since it seems that
+      // whitespace changes don't trigger the v.docChanged flag
       const newVal = v.state.doc.toString();
       if (newVal !== value) {
         lastValue = newVal; // ensure we don't trigger a state update on editing

@@ -1,6 +1,13 @@
 <script lang="ts">
   import "smelte/src/tailwind.css";
-  import { TextField, Checkbox, Chip, ProgressLinear, Button } from "smelte";
+  import {
+    TextField,
+    Checkbox,
+    Chip,
+    ProgressLinear,
+    Button,
+    Tooltip,
+  } from "smelte";
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
 
@@ -30,6 +37,10 @@
   });
 
   onMount(() => {
+    loadInitialJSON();
+  });
+
+  function loadInitialJSON() {
     // load initial json, if avail
     service.getJqInput().then((json) => {
       if (!json) {
@@ -37,7 +48,7 @@
       }
       jq.j = json;
     });
-  });
+  }
 
   function onClickDocumentation() {
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
@@ -96,20 +107,21 @@
 </script>
 
 <main class="flex flex-col h-full">
-  <div class="nav flex-initial container max-w-none p-2">
-    <div class="inline-block align-middle">
+  <div class="nav flex-initial container max-w-none p-2 flex">
+    <div class="inline-block align-middle flex-initial">
       <a href="/" class="navbar-brand"
         ><img src="images/logo.png" alt="jqplay" /></a
       >
     </div>
-    <div class="inline-block text-sm align-middle ml-4">
+    <div class="inline-block text-sm align-middle ml-4 flex-initial">
       A playground for <a
         href="https://stedolan.github.io/jq/"
         class="navbar-link">jq</a
       >
       {jqVersion}
     </div>
-    <p class="inline-block docs">
+    <div class="flex-auto" />
+    <p class="inline-block docs flex-initial">
       <Chip icon="article" outlined on:click={onClickDocumentation}
         >documentation</Chip
       >
@@ -126,9 +138,20 @@
         <h6>JQ Filter</h6>
         <TextField bind:value={jq.q} outlined />
       </div>
-      <h6>JSON</h6>
+      <div class="flex-initial flex">
+        <h6>JSON</h6>
+        <div class="flex-auto" />
+        <Button
+          icon="refresh"
+          small
+          text
+          flat
+          title="Reload initial JSON (if any)"
+          on:click={loadInitialJSON}
+        />
+      </div>
       <CodeMirror
-        class="json_input flex-auto h-full overflow-auto"
+        class="json_input flex-auto h-full overflow-auto pt-2"
         bind:value={jq.j}
         {langs}
       />
