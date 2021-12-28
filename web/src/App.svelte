@@ -15,6 +15,8 @@
   let jqVersion = "...";
   let commandLine = "";
 
+  let showCheatsheet = true;
+
   const langs = [langJson()];
 
   const slurp = jq.getOpt("slurp");
@@ -176,54 +178,68 @@
   </div>
 
   <div class="flex-initial p-4">
-    <div class="commandline border">
-      <h6 class="text-center pt-4 pb-4">Command Line</h6>
+    <div class="commandline panel border">
+      <h6 class="text-center header pt-4 pb-4">Command Line</h6>
       <div class="text-center mt-2 mb-4"><code>{commandLine}</code></div>
     </div>
   </div>
 
   <div class="flex-initial p-4">
-    <div class="cheatsheet border">
-      <h6 class="text-center pt-4 pb-4">Cheatsheet</h6>
-      <div class="grid grid-cols-2 gap-4 p-4">
-        <table class="table-auto">
-          <tbody>
-            {#each samplesLeft as sample}
-              <tr class="border-t">
-                <td>
-                  <code>{sample.code}</code>
-                </td>
-                <td>{sample.text}</td>
-                <td>
-                  <Button
-                    icon="assignment"
-                    text
-                    light
-                    flat
-                    on:click={() => loadSample(sample)}
-                  />
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-
-        <table class="table-auto">
-          <tbody>
-            {#each samplesRight as sample}
-              <tr class="border-t">
-                <td>
-                  <code>{sample.code}</code>
-                </td>
-                <td>{sample.text}</td>
-                <td>
-                  <Button icon="assignment" text light flat />
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+    <div class="cheatsheet panel border">
+      <div class="header text-center pt-4 pb-4">
+        <Button
+          classes="float-right -mt-4"
+          icon={showCheatsheet ? "unfold_less" : "unfold_more"}
+          text
+          light
+          flat
+          on:click={() => {
+            showCheatsheet = !showCheatsheet;
+          }}
+        />
+        <h6 class="">Cheatsheet</h6>
       </div>
+      {#if showCheatsheet}
+        <div class="grid grid-cols-2 gap-4 p-4">
+          <table class="table-auto">
+            <tbody>
+              {#each samplesLeft as sample}
+                <tr class="border-t">
+                  <td>
+                    <code>{sample.code}</code>
+                  </td>
+                  <td>{sample.text}</td>
+                  <td>
+                    <Button
+                      icon="assignment"
+                      text
+                      light
+                      flat
+                      on:click={() => loadSample(sample)}
+                    />
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+
+          <table class="table-auto">
+            <tbody>
+              {#each samplesRight as sample}
+                <tr class="border-t">
+                  <td>
+                    <code>{sample.code}</code>
+                  </td>
+                  <td>{sample.text}</td>
+                  <td>
+                    <Button icon="assignment" text light flat />
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/if}
     </div>
   </div>
 </main>
@@ -247,11 +263,8 @@
     }
   }
 
-  .cheatsheet,
-  .commandline {
-    h6 {
-      background-color: #f5f5f5;
-    }
+  .panel .header {
+    background-color: #f5f5f5;
   }
 
   code {
