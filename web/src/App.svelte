@@ -1,13 +1,6 @@
 <script lang="ts">
   import "smelte/src/tailwind.css";
-  import {
-    TextField,
-    Checkbox,
-    Chip,
-    ProgressLinear,
-    Button,
-    Tooltip,
-  } from "smelte";
+  import { TextField, Checkbox, Chip, ProgressLinear, Button } from "smelte";
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
 
@@ -77,12 +70,12 @@
   // progressbar
   let progress = -1;
   let progressTimeoutId = null;
-  function startProgressBar() {
-    $: {
-      if (progress < 0 && progressTimeoutId !== null) {
-        clearTimeout(progressTimeoutId);
-      }
+  $: {
+    if (progress < 0 && progressTimeoutId !== null) {
+      clearTimeout(progressTimeoutId);
     }
+  }
+  function startProgressBar() {
     progress = 0;
     function next() {
       progressTimeoutId = setTimeout(() => {
