@@ -54,6 +54,7 @@
     if (lastValue === value) {
       return;
     }
+
     let editorState = EditorState.create({
       doc: value,
       extensions: [
@@ -72,12 +73,10 @@
   }
 </script>
 
-<div bind:this={element} class={classes} />
+<div bind:this={element} class="cm-editor-wrap {classes}" />
 
 <style global lang="postcss">
-  /* BASICS */
   .cm-editor {
-    height: var(--cm-height, 300px);
     direction: ltr;
     color: var(--cm-text-color);
     background: var(--cm-background-color);
@@ -87,6 +86,7 @@
     .cm-scroller {
       font-family: "SF Mono", "DejaVu Sans Mono", Menlo, Monaco, Consolas,
         Courier, monospace !important;
+      overflow-x: unset;
     }
   }
 </style>

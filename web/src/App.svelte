@@ -16,7 +16,6 @@
   let commandLine = "";
 
   const langs = [langJson()];
-  let jsonInputHeight = "500px";
 
   const slurp = jq.getOpt("slurp");
   const nullInput = jq.getOpt("null-input");
@@ -95,8 +94,8 @@
   }
 </script>
 
-<main>
-  <div class="nav container max-w-none p-2">
+<main class="flex flex-col h-full">
+  <div class="nav flex-initial container max-w-none p-2">
     <div class="inline-block align-middle">
       <a href="/" class="navbar-brand"
         ><img src="images/logo.png" alt="jqplay" /></a
@@ -120,68 +119,70 @@
     <ProgressLinear {progress} />
   {/if}
 
-  <div class="main container max-w-none p-2">
-    <div class="grid grid-cols-2 gap-4 h-600px">
-      <div class="inputs">
+  <div class="flex-auto grid grid-cols-2 gap-4 overflow-hidden h-full p-4">
+    <div class="inputs flex flex-col overflow-hidden h-full">
+      <div class="flex-initial">
         <h6>JQ Filter</h6>
         <TextField bind:value={jq.q} outlined />
-
-        <h6>JSON</h6>
-        <CodeMirror
-          class="json_input"
-          bind:value={jq.j}
-          {langs}
-          --cm-height={jsonInputHeight}
-        />
       </div>
-
-      <div class="outputs">
-        <h6 class="">Result</h6>
-        <div class="jq_options flex">
-          <Checkbox
-            label="Compact Output"
-            bind:checked={compactOutput.enabled}
-            on:change={onChangeJq(jq)}
-          />
-          <Checkbox
-            class="ml-2"
-            label="Null Input"
-            bind:checked={nullInput.enabled}
-            on:change={onChangeJq(jq)}
-          />
-          <Checkbox
-            class="ml-2"
-            label="Raw Input"
-            bind:checked={rawInput.enabled}
-            on:change={onChangeJq(jq)}
-          />
-          <Checkbox
-            class="ml-2"
-            label="Raw Output"
-            bind:checked={rawOutput.enabled}
-            on:change={onChangeJq(jq)}
-          />
-          <Checkbox
-            class="ml-2"
-            label="Slurp"
-            bind:checked={slurp.enabled}
-            on:change={onChangeJq(jq)}
-          />
-        </div>
-        <CodeMirror
-          class="json_output"
-          bind:value={result}
-          {langs}
-          readOnly={true}
-        />
-      </div>
+      <h6>JSON</h6>
+      <CodeMirror
+        class="json_input flex-auto h-full overflow-auto"
+        bind:value={jq.j}
+        {langs}
+      />
     </div>
 
-    <div class="commandline mt-8 border">
+    <div class="outputs flex flex-col overflow-hidden h-full">
+      <h6 class="">Result</h6>
+      <div class="jq_options flex-initial flex">
+        <Checkbox
+          label="Compact Output"
+          bind:checked={compactOutput.enabled}
+          on:change={onChangeJq(jq)}
+        />
+        <Checkbox
+          class="ml-2"
+          label="Null Input"
+          bind:checked={nullInput.enabled}
+          on:change={onChangeJq(jq)}
+        />
+        <Checkbox
+          class="ml-2"
+          label="Raw Input"
+          bind:checked={rawInput.enabled}
+          on:change={onChangeJq(jq)}
+        />
+        <Checkbox
+          class="ml-2"
+          label="Raw Output"
+          bind:checked={rawOutput.enabled}
+          on:change={onChangeJq(jq)}
+        />
+        <Checkbox
+          class="ml-2"
+          label="Slurp"
+          bind:checked={slurp.enabled}
+          on:change={onChangeJq(jq)}
+        />
+      </div>
+      <CodeMirror
+        class="json_output flex-auto h-full overflow-auto"
+        bind:value={result}
+        {langs}
+        readOnly={true}
+      />
+    </div>
+  </div>
+
+  <div class="flex-initial p-4">
+    <div class="commandline border">
       <h6 class="text-center pt-4 pb-4">Command Line</h6>
       <div class="text-center mt-2 mb-4"><code>{commandLine}</code></div>
     </div>
+  </div>
 
+  <div class="flex-initial p-4">
     <div class="cheatsheet border">
       <h6 class="text-center pt-4 pb-4">Cheatsheet</h6>
       <div class="grid grid-cols-2 gap-4 p-4">
@@ -228,29 +229,6 @@
 </main>
 
 <style>
-  main,
-  div.main {
-    /* @apply h-full; */
-    .grid {
-      /* @apply h-full; */
-    }
-  }
-
-  :global {
-    .outputs {
-      textarea {
-        height: 220px;
-      }
-    }
-  }
-
-  :global {
-    .commandline input {
-      font-family: "SF Mono", "DejaVu Sans Mono", Menlo, Monaco, Consolas,
-        Courier, monospace !important;
-    }
-  }
-
   .nav {
     background-color: #222;
     color: #9d9d9d;
@@ -258,10 +236,6 @@
 
   h6 {
     font-weight: bolder;
-  }
-
-  .main {
-    height: 600px;
   }
 
   /* reduce checkbox padding */
