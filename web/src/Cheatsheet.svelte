@@ -1,30 +1,13 @@
 <script lang="ts">
-  import { Button } from "smelte";
-  import { createEventDispatcher } from "svelte";
+  import SampleRow from "./SampleRow.svelte";
   import { samplesLeft, samplesRight } from "./samples";
-
-  const dispatch = createEventDispatcher();
 </script>
 
-<div class="grid grid-cols-2 gap-4 p-4">
+<div class="lg:grid grid-cols-2 gap-4 p-4 sm:hidden">
   <table class="table-auto">
     <tbody>
       {#each samplesLeft as sample}
-        <tr class="border-t">
-          <td>
-            <code>{sample.code}</code>
-          </td>
-          <td>{sample.text}</td>
-          <td>
-            <Button
-              icon="assignment"
-              text
-              light
-              flat
-              on:click={() => dispatch("sample", { sample })}
-            />
-          </td>
-        </tr>
+        <SampleRow {sample} on:sample />
       {/each}
     </tbody>
   </table>
@@ -32,15 +15,20 @@
   <table class="table-auto">
     <tbody>
       {#each samplesRight as sample}
-        <tr class="border-t">
-          <td>
-            <code>{sample.code}</code>
-          </td>
-          <td>{sample.text}</td>
-          <td>
-            <Button icon="assignment" text light flat />
-          </td>
-        </tr>
+        <SampleRow {sample} on:sample />
+      {/each}
+    </tbody>
+  </table>
+</div>
+
+<div class="gap-4 p-4 sm:block lg:hidden">
+  <table class="table-auto w-full">
+    <tbody>
+      {#each samplesLeft as sample}
+        <SampleRow {sample} on:sample />
+      {/each}
+      {#each samplesRight as sample}
+        <SampleRow {sample} on:sample />
       {/each}
     </tbody>
   </table>

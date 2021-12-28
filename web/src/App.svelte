@@ -222,6 +222,9 @@
 
   /* reduce checkbox padding */
   :global {
+    .docs button {
+      background-color: transparent;
+    }
     .jq_options {
       label {
         padding-left: 0 !important;
