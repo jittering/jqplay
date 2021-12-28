@@ -8,6 +8,7 @@
   import CodeMirror from "./CodeMirror.svelte";
   import { onMount } from "svelte";
   import { samplesLeft, samplesRight } from "./samples";
+  import Panel from "./Panel.svelte";
 
   export let global: any;
   const jq = new Jq();
@@ -177,71 +178,53 @@
     </div>
   </div>
 
-  <div class="flex-initial p-4">
-    <div class="commandline panel border">
-      <h6 class="text-center header pt-4 pb-4">Command Line</h6>
-      <div class="text-center mt-2 mb-4"><code>{commandLine}</code></div>
+  <Panel label="Command Line">
+    <div class="text-center">
+      <code>{commandLine}</code>
     </div>
-  </div>
+  </Panel>
 
-  <div class="flex-initial p-4">
-    <div class="cheatsheet panel border">
-      <div class="header text-center pt-4 pb-4">
-        <Button
-          classes="float-right -mt-4"
-          icon={showCheatsheet ? "unfold_less" : "unfold_more"}
-          text
-          light
-          flat
-          on:click={() => {
-            showCheatsheet = !showCheatsheet;
-          }}
-        />
-        <h6 class="">Cheatsheet</h6>
-      </div>
-      {#if showCheatsheet}
-        <div class="grid grid-cols-2 gap-4 p-4">
-          <table class="table-auto">
-            <tbody>
-              {#each samplesLeft as sample}
-                <tr class="border-t">
-                  <td>
-                    <code>{sample.code}</code>
-                  </td>
-                  <td>{sample.text}</td>
-                  <td>
-                    <Button
-                      icon="assignment"
-                      text
-                      light
-                      flat
-                      on:click={() => loadSample(sample)}
-                    />
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
+  <Panel label="Cheatsheet" collapsible={true}>
+    <div class="grid grid-cols-2 gap-4 p-4">
+      <table class="table-auto">
+        <tbody>
+          {#each samplesLeft as sample}
+            <tr class="border-t">
+              <td>
+                <code>{sample.code}</code>
+              </td>
+              <td>{sample.text}</td>
+              <td>
+                <Button
+                  icon="assignment"
+                  text
+                  light
+                  flat
+                  on:click={() => loadSample(sample)}
+                />
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
 
-          <table class="table-auto">
-            <tbody>
-              {#each samplesRight as sample}
-                <tr class="border-t">
-                  <td>
-                    <code>{sample.code}</code>
-                  </td>
-                  <td>{sample.text}</td>
-                  <td>
-                    <Button icon="assignment" text light flat />
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
+      <table class="table-auto">
+        <tbody>
+          {#each samplesRight as sample}
+            <tr class="border-t">
+              <td>
+                <code>{sample.code}</code>
+              </td>
+              <td>{sample.text}</td>
+              <td>
+                <Button icon="assignment" text light flat />
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
-  </div>
+  </Panel>
 </main>
 
 <style>
@@ -261,10 +244,6 @@
         padding-left: 0 !important;
       }
     }
-  }
-
-  .panel .header {
-    background-color: #f5f5f5;
   }
 
   code {
