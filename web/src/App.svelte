@@ -7,16 +7,14 @@
   import { json as langJson } from "@codemirror/lang-json";
   import CodeMirror from "./CodeMirror.svelte";
   import { onMount } from "svelte";
-  import { samplesLeft, samplesRight } from "./samples";
   import Panel from "./Panel.svelte";
+  import Cheatsheet from "./Cheatsheet.svelte";
 
   export let global: any;
   const jq = new Jq();
   let result = "";
   let jqVersion = "...";
   let commandLine = "";
-
-  let showCheatsheet = true;
 
   const langs = [langJson()];
 
@@ -185,45 +183,7 @@
   </Panel>
 
   <Panel label="Cheatsheet" collapsible={true}>
-    <div class="grid grid-cols-2 gap-4 p-4">
-      <table class="table-auto">
-        <tbody>
-          {#each samplesLeft as sample}
-            <tr class="border-t">
-              <td>
-                <code>{sample.code}</code>
-              </td>
-              <td>{sample.text}</td>
-              <td>
-                <Button
-                  icon="assignment"
-                  text
-                  light
-                  flat
-                  on:click={() => loadSample(sample)}
-                />
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-
-      <table class="table-auto">
-        <tbody>
-          {#each samplesRight as sample}
-            <tr class="border-t">
-              <td>
-                <code>{sample.code}</code>
-              </td>
-              <td>{sample.text}</td>
-              <td>
-                <Button icon="assignment" text light flat />
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+    <Cheatsheet on:sample={(ev) => loadSample(ev.detail.sample)} />
   </Panel>
 </main>
 
