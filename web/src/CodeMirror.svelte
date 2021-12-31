@@ -54,6 +54,10 @@
       return;
     }
 
+    if (value === "") {
+      value = "{}";
+    }
+
     let editorState = EditorState.create({
       doc: value,
       extensions: [
