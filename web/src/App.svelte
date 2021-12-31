@@ -1,5 +1,6 @@
 <script lang="ts">
   import "smelte/src/tailwind.css";
+
   import { TextField, Checkbox, Chip, ProgressLinear, Button } from "smelte";
   import Service, { Jq } from "./service";
   import { debounce } from "lodash-es";
@@ -203,7 +204,7 @@
   </Panel>
 </main>
 
-<style>
+<style lang="postcss">
   .nav {
     background-color: #222;
     color: #9d9d9d;
