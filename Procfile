@@ -1,1 +1,2 @@
-web: ./bin/jqplay
+jq: make run
+web: make web
