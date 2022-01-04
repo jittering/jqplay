@@ -11,9 +11,12 @@ clean: clean-web
 	rm -f */rice-box.go
 	rm -rf */statik/
 
-build: clean
+build-web:
 	set -eo pipefail
-	cd web && npm install && npm run build && rm -f public/build/*.map && cd ..
+	cd web && npm install && npm run build && rm -f public/build/*.map
+
+build: build-web
+	set -eo pipefail
 	go generate ./...
 	mkdir -p dist
 	go build -ldflags="-X 'main.GinMode=release'" -o ./dist/jqplay ./cmd/jqplay
@@ -32,6 +35,11 @@ deps:
 
 release:
 	goreleaser release --rm-dist --parallelism 1 --skip-validate
+
+check-style:
+	goreleaser check
+	goreleaser --snapshot --parallelism 1 --skip-validate --rm-dist
+	brew style ./dist/*.rb
 
 web: clean-web
 	cd web && npm run dev

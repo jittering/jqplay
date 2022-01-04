@@ -1,9 +1,9 @@
-project_name: jqplay
+project_name: jqplay-cli
 
 before:
   hooks:
     - make clean
-    - npm install
+    - make build-web
     - go generate ./...
 
 builds:
@@ -51,7 +51,7 @@ brews:
       owner: jittering
       name: homebrew-kegs
 
-    name: jqplay
+    name: jqplay-cli
 
     url_template: "https://github.com/jittering/jqplay/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
@@ -62,4 +62,4 @@ brews:
     folder: Formula
 
     homepage: "https://github.com/jittering/jqplay"
-    description: "A local playground for jq"
+    description: "Local playground for jq"
