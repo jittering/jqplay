@@ -57,4 +57,16 @@ export default class Service {
     ).then((res) => res.data);
   }
 
+  runJmesPath(data: Jq) {
+    return axios.post("/jmespath", {
+      input: data.j,
+      search: data.q,
+    },
+      {
+        // return the val directly, don't do any json parsing on the result
+        transformResponse: (value) => value
+      },
+    ).then((res) => res.data);
+  }
+
 }

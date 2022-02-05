@@ -16,6 +16,8 @@
   let result = "";
   let jqVersion = "...";
   let commandLine = "";
+  let mode = "jq"; // jq or JMESPath
+  let switchLabel = "JMESPath";
 
   const langs = [langJson()];
 
@@ -48,24 +50,45 @@
     window.open("https://stedolan.github.io/jq/manual/", "_blank");
   }
 
+  function onClickSwitch() {
+    // toggle the mode
+    if (mode === "jq") {
+      mode = "JMESPath";
+      switchLabel = "jq";
+    } else {
+      mode = "jq";
+      switchLabel = "JMESPath";
+    }
+  }
+
   // run jq on input/filter/option changes
   $: {
     onChangeJq(jq);
   }
+
   const onChangeJq = debounce((jq) => {
     startProgressBar();
-    service
-      .runJq(jq)
-      .then((output) => {
-        progress = -1;
-        clearTimeout(progressTimeoutId);
-        result = output;
-      })
-      .then(() => {
-        service.getJqCommandLine(jq).then((output) => {
-          commandLine = output;
+    if (mode === "jq") {
+      return service
+        .runJq(jq)
+        .then((output) => {
+          progress = -1;
+          clearTimeout(progressTimeoutId);
+          result = output;
+        })
+        .then(() => {
+          service.getJqCommandLine(jq).then((output) => {
+            commandLine = output;
+          });
         });
-      });
+    }
+
+    // jmes
+    return service.runJmesPath(jq).then((output) => {
+      progress = -1;
+      clearTimeout(progressTimeoutId);
+      result = output;
+    });
   }, 250);
 
   // progressbar
@@ -116,6 +139,9 @@
     </div>
     <div class="flex-auto" />
     <p class="inline-block docs flex-initial">
+      <Chip icon="article" outlined on:click={onClickSwitch}
+        >Switch to {switchLabel}</Chip
+      >
       <Chip icon="article" outlined on:click={onClickDocumentation}
         >documentation</Chip
       >
