@@ -26,6 +26,7 @@ require (
 	github.com/gin-gonic/gin v1.1.5-0.20170702092826-d459835d2b07 // indirect
 	github.com/golang/protobuf v0.0.0-20171021043952-1643683e1b54 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
@@ -49,5 +50,5 @@ require (
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
-	gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

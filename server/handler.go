@@ -37,6 +37,7 @@ type JQHandler struct {
 	lastCommand string
 }
 
+// Run JQ filter
 func (h *JQHandler) handleJqPost(c *gin.Context) {
 	var j *jq.JQ
 	if err := c.BindJSON(&j); err != nil {

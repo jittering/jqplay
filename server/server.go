@@ -71,6 +71,10 @@ func (s *Server) Start(ginMode string) error {
 	router.GET("/jq/version", h.handleJqVersion)
 	router.GET("/jq", h.handleJqGet)
 	router.POST("/jq", h.handleJqPost)
+	// for jmespath
+	router.POST("/jmespath", h.handleJmespathPost)
+
+	// sharing, removed for now
 	// router.POST("/s", h.handleJqSharePost)
 	// router.GET("/s/:id", h.handleJqShareGet)
 
