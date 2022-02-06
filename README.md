@@ -10,6 +10,9 @@ third party server.
 You can use the default web-based UI or a [complete terminal-based UI](./demo/README.md#terminal-ui),
 all without hitting the internet.
 
+The web-based UI also has support for [JMESPath](https://jmespath.org/)
+expressions, making it a handy tool for exploring, in particular AWS APIs.
+
 ## Quickstart
 
 ```sh
