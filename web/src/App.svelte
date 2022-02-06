@@ -47,7 +47,11 @@
   }
 
   function onClickDocumentation() {
-    window.open("https://stedolan.github.io/jq/manual/", "_blank");
+    if (mode === "jq") {
+      window.open("https://stedolan.github.io/jq/manual/", "_blank");
+    } else {
+      window.open("https://jmespath.org/tutorial.html", "_blank");
+    }
   }
 
   function onClickSwitch() {
@@ -61,10 +65,14 @@
     }
   }
 
+  function prettyPrint(input: string): string {
+    const d = JSON.parse(input);
+    return JSON.stringify(d, null, 2);
+  }
+
   function onClickPrettyPrint() {
     try {
-      const d = JSON.parse(jq.j);
-      jq.j = JSON.stringify(d, null, 2);
+      jq.j = prettyPrint(jq.j);
     } catch (e) {
       // TODO: show err
     }
@@ -96,7 +104,15 @@
     return service.runJmesPath(jq).then((output) => {
       progress = -1;
       clearTimeout(progressTimeoutId);
-      result = output;
+      if (output) {
+        if (output.startsWith("failed")) {
+          result = output;
+        } else {
+          result = prettyPrint(output);
+        }
+      } else {
+        result = "error: JMESPath search retruned null response";
+      }
     });
   }, 250);
 
@@ -140,11 +156,15 @@
       >
     </div>
     <div class="inline-block text-sm align-middle ml-4 flex-initial">
-      A playground for <a
-        href="https://stedolan.github.io/jq/"
-        class="navbar-link">jq</a
-      >
-      {jqVersion}
+      A playground for
+      {#if mode === "jq"}<a
+          href="https://stedolan.github.io/jq/"
+          class="navbar-link">jq</a
+        >
+        {jqVersion}
+      {:else}
+        <a href="https://jmespath.org/" class="navbar-link">JMESPath</a>
+      {/if}
     </div>
     <div class="flex-auto" />
     <p class="inline-block docs flex-initial">
@@ -164,7 +184,11 @@
   <div class="flex-auto grid grid-cols-2 gap-4 overflow-hidden h-full p-4">
     <div class="inputs flex flex-col overflow-hidden h-full">
       <div class="flex-initial">
-        <h6>JQ Filter</h6>
+        {#if mode === "jq"}
+          <h6>JQ Filter</h6>
+        {:else}
+          <h6>JMESPath Search</h6>
+        {/if}
         <TextField bind:value={jq.q} outlined />
       </div>
       <div class="flex-initial flex">
@@ -196,37 +220,39 @@
 
     <div class="outputs flex flex-col overflow-hidden h-full">
       <h6 class="">Result</h6>
-      <div class="jq_options flex-initial flex">
-        <Checkbox
-          label="Compact Output"
-          bind:checked={compactOutput.enabled}
-          on:change={onChangeJq(jq)}
-        />
-        <Checkbox
-          class="ml-2"
-          label="Null Input"
-          bind:checked={nullInput.enabled}
-          on:change={onChangeJq(jq)}
-        />
-        <Checkbox
-          class="ml-2"
-          label="Raw Input"
-          bind:checked={rawInput.enabled}
-          on:change={onChangeJq(jq)}
-        />
-        <Checkbox
-          class="ml-2"
-          label="Raw Output"
-          bind:checked={rawOutput.enabled}
-          on:change={onChangeJq(jq)}
-        />
-        <Checkbox
-          class="ml-2"
-          label="Slurp"
-          bind:checked={slurp.enabled}
-          on:change={onChangeJq(jq)}
-        />
-      </div>
+      {#if mode === "jq"}
+        <div class="jq_options flex-initial flex">
+          <Checkbox
+            label="Compact Output"
+            bind:checked={compactOutput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            class="ml-2"
+            label="Null Input"
+            bind:checked={nullInput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            class="ml-2"
+            label="Raw Input"
+            bind:checked={rawInput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            class="ml-2"
+            label="Raw Output"
+            bind:checked={rawOutput.enabled}
+            on:change={onChangeJq(jq)}
+          />
+          <Checkbox
+            class="ml-2"
+            label="Slurp"
+            bind:checked={slurp.enabled}
+            on:change={onChangeJq(jq)}
+          />
+        </div>
+      {/if}
       <CodeMirror
         class="json_output flex-auto h-full overflow-auto"
         bind:value={result}
@@ -236,15 +262,17 @@
     </div>
   </div>
 
-  <Panel label="Command Line">
-    <div class="text-center">
-      <code>{commandLine}</code>
-    </div>
-  </Panel>
+  {#if mode === "jq"}
+    <Panel label="Command Line">
+      <div class="text-center">
+        <code>{commandLine}</code>
+      </div>
+    </Panel>
 
-  <Panel label="Cheatsheet" collapsible={true}>
-    <Cheatsheet on:sample={(ev) => loadSample(ev.detail.sample)} />
-  </Panel>
+    <Panel label="Cheatsheet" collapsible={true}>
+      <Cheatsheet on:sample={(ev) => loadSample(ev.detail.sample)} />
+    </Panel>
+  {/if}
 </main>
 
 <style lang="postcss">
