@@ -61,6 +61,15 @@
     }
   }
 
+  function onClickPrettyPrint() {
+    try {
+      const d = JSON.parse(jq.j);
+      jq.j = JSON.stringify(d, null, 2);
+    } catch (e) {
+      // TODO: show err
+    }
+  }
+
   // run jq on input/filter/option changes
   $: {
     onChangeJq(jq);
@@ -161,6 +170,14 @@
       <div class="flex-initial flex">
         <h6>JSON</h6>
         <div class="flex-auto" />
+        <Button
+          icon="format_align_left"
+          small
+          text
+          flat
+          title="Pretty Print"
+          on:click={onClickPrettyPrint}
+        />
         <Button
           icon="refresh"
           small
