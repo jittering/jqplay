@@ -175,11 +175,14 @@
     </div>
     <div class="flex-auto" />
     <p class="inline-block docs flex-initial">
-      <Chip icon="article" outlined on:click={onClickSwitch}
+      <Chip class="customChip" icon="article" outlined on:click={onClickSwitch}
         >Switch to {switchLabel}</Chip
       >
-      <Chip icon="article" outlined on:click={onClickDocumentation}
-        >documentation</Chip
+      <Chip
+        class="customChip"
+        icon="article"
+        outlined
+        on:click={onClickDocumentation}>documentation</Chip
       >
     </p>
   </div>
@@ -198,8 +201,8 @@
         {/if}
         <TextField bind:value={jq.q} outlined />
       </div>
-      <div class="flex-initial flex">
-        <h6>JSON</h6>
+      <div class="flex-initial flex mt-4">
+        <h6 class="">JSON</h6>
         <div class="flex-auto" />
         <Button
           icon="format_align_left"
@@ -314,6 +317,17 @@
       th:first-child,
       td:first-child {
         border-right-width: 0;
+      }
+    }
+
+    .customChip {
+      button {
+        padding: 4px 8px;
+        color: #9d9d9d !important;
+        border-color: #9d9d9d !important;
+        i {
+          color: #9d9d9d !important;
+        }
       }
     }
   }
