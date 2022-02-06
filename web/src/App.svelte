@@ -10,14 +10,19 @@
   import { onMount } from "svelte";
   import Panel from "./Panel.svelte";
   import Cheatsheet from "./Cheatsheet.svelte";
+  import { samplesLeft, samplesRight } from "./samples";
+  import { samplesJmesLeft, samplesJmesRight } from "./samples_jmespath";
 
   export let global: any;
   const jq = new Jq();
   let result = "";
   let jqVersion = "...";
   let commandLine = "";
+
+  // switches for jq/jmespath
   let mode = "jq"; // jq or JMESPath
   let switchLabel = "JMESPath";
+  let samples = { Left: samplesLeft, Right: samplesRight };
 
   const langs = [langJson()];
 
@@ -58,9 +63,11 @@
     // toggle the mode
     if (mode === "jq") {
       mode = "JMESPath";
+      samples = { Left: samplesJmesLeft, Right: samplesJmesRight };
       switchLabel = "jq";
     } else {
       mode = "jq";
+      samples = { Left: samplesLeft, Right: samplesRight };
       switchLabel = "JMESPath";
     }
   }
@@ -187,7 +194,7 @@
         {#if mode === "jq"}
           <h6>JQ Filter</h6>
         {:else}
-          <h6>JMESPath Search</h6>
+          <h6>JMESPath Expression</h6>
         {/if}
         <TextField bind:value={jq.q} outlined />
       </div>
@@ -268,11 +275,10 @@
         <code>{commandLine}</code>
       </div>
     </Panel>
-
-    <Panel label="Cheatsheet" collapsible={true}>
-      <Cheatsheet on:sample={(ev) => loadSample(ev.detail.sample)} />
-    </Panel>
   {/if}
+  <Panel label="Cheatsheet" collapsible={true}>
+    <Cheatsheet {samples} on:sample={(ev) => loadSample(ev.detail.sample)} />
+  </Panel>
 </main>
 
 <style lang="postcss">
