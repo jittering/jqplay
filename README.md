@@ -16,8 +16,8 @@ expressions, making it a handy tool for exploring, in particular AWS APIs.
 ## Quickstart
 
 ```sh
-brew install jittering/kegs/jqplay
-curl -s https://jsonplaceholder.typicode.com/todos/1 | jqplay
+brew install jittering/kegs/jqplay-cli
+curl -s https://jsonplaceholder.typicode.com/todos/1 | jqplay-cli
 ```
 
 ## Installation
@@ -29,7 +29,7 @@ with one of the following methods:
 via homebrew (mac or linux):
 
 ```sh
-brew install jittering/kegs/jqplay
+brew install jittering/kegs/jqplay-cli
 ```
 
 or manually:
@@ -49,7 +49,7 @@ make build
 ## Usage
 
 ```text
-Usage of jqplay:
+Usage of jqplay-cli:
 
   -cli
       CLI mode
